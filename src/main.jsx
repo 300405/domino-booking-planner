@@ -181,7 +181,7 @@ function App() {
     <div className="app-shell">
       <Sidebar activeView={activeView} onNavigate={setActiveView} />
       <main className="main">
-        <Topbar title={activeView} onAdd={() => setShowForm(true)} />
+        <Topbar title={activeView} bookings={bookings} onAdd={() => setShowForm(true)} />
         <section className="content">
           {activeView === 'Party Planner' && (
             <>
@@ -241,7 +241,10 @@ function Sidebar({ activeView, onNavigate }) {
   );
 }
 
-function Topbar({ title, onAdd }) {
+function Topbar({ title, bookings, onAdd }) {
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notifications = buildNotifications(bookings);
+
   return (
     <header className="topbar">
       <div className="page-title">
@@ -253,7 +256,24 @@ function Topbar({ title, onAdd }) {
       </div>
       <div className="topbar-actions">
         <label className="search"><Search size={17} /><input placeholder="Search bookings..." /></label>
-        <button className="icon-button alert" aria-label="Notifications"><Bell size={19} /><b>3</b></button>
+        <div className="notification-wrap">
+          <button className="icon-button alert" aria-label="Notifications" onClick={() => setShowNotifications((open) => !open)}>
+            <Bell size={19} />
+            {notifications.length > 0 && <b>{notifications.length}</b>}
+          </button>
+          {showNotifications && (
+            <div className="notification-menu">
+              <strong>Notifications</strong>
+              {notifications.map((item) => (
+                <div className="notification-item" key={item.title}>
+                  <span>{item.title}</span>
+                  <small>{item.detail}</small>
+                </div>
+              ))}
+              {notifications.length === 0 && <p>Nothing needs attention.</p>}
+            </div>
+          )}
+        </div>
         <button className="primary" onClick={onAdd}><Plus size={18} /> Add Booking</button>
       </div>
     </header>
@@ -742,6 +762,25 @@ function buildCustomers(bookings) {
   });
 
   return Array.from(customers.values());
+}
+
+function buildNotifications(bookings) {
+  const pending = bookings.filter((booking) => booking.status === 'Pending').length;
+  const refundsDue = bookings.filter((booking) => booking.releaseStatus === 'Refund due').length;
+  const holdsOpen = bookings.filter((booking) => booking.paymentStatus === 'Hold authorised' && booking.releaseStatus !== 'Released').length;
+  const notifications = [];
+
+  if (pending) {
+    notifications.push({ title: `${pending} pending booking${pending === 1 ? '' : 's'}`, detail: 'Review and approve the party details.' });
+  }
+  if (refundsDue) {
+    notifications.push({ title: `${refundsDue} refund due`, detail: 'Release or refund the deposit after checks.' });
+  }
+  if (holdsOpen) {
+    notifications.push({ title: `${holdsOpen} card hold to review`, detail: 'Capture only if you need to keep the deposit.' });
+  }
+
+  return notifications;
 }
 
 function getCalendarDays(year, month) {
