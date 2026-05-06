@@ -60,7 +60,9 @@ button { cursor: pointer; }
 .danger { background: var(--red-soft); color: #933930; }
 
 .stats-row { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; min-height: 104px; padding: 18px 20px; display: grid; grid-template-columns: repeat(4, minmax(130px, 1fr)); align-items: center; gap: 10px; box-shadow: 0 1px 0 rgba(23, 35, 31, .03); }
-.stat { display: grid; grid-template-columns: 42px 1fr; align-items: center; gap: 12px; min-width: 0; padding-right: 12px; border-right: 1px solid var(--border-soft); }
+.stat { display: grid; grid-template-columns: 42px 1fr; align-items: center; gap: 12px; min-width: 0; padding: 8px 12px 8px 0; border: 0; border-right: 1px solid var(--border-soft); background: transparent; text-align: left; border-radius: 8px; }
+.stat:hover { background: #fbfcfa; }
+.stat:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 .stat.danger .stat-icon { background: var(--red-soft); color: var(--red); }
 .stat-icon { width: 42px; height: 42px; border-radius: 8px; background: var(--brass-soft); color: var(--brass); display: grid; place-items: center; }
 .stat strong { display: block; font-size: 24px; line-height: 1.1; }

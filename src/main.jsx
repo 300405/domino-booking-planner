@@ -185,7 +185,10 @@ function App() {
         <section className="content">
           {activeView === 'Party Planner' && (
             <>
-              <Stats stats={stats} />
+              <Stats stats={stats} onOpenStatus={(status) => {
+                setStatusFilter(status);
+                setActiveView(status === 'All Statuses' ? 'Party Planner' : 'Payments');
+              }} />
               <div className="workspace-grid">
                 <CalendarPanel
                   bookings={visibleBookings}
@@ -205,7 +208,7 @@ function App() {
               <QueuePanel bookings={filteredBookings} statusFilter={statusFilter} setStatusFilter={setStatusFilter} onSelect={setSelectedId} onUpdate={updateBooking} />
             </>
           )}
-          {activeView === 'Payments' && <PaymentsView bookings={bookings} onSelect={setSelectedId} onUpdate={updateBooking} />}
+          {activeView === 'Payments' && <PaymentsView bookings={bookings} statusFilter={statusFilter} setStatusFilter={setStatusFilter} onSelect={setSelectedId} onUpdate={updateBooking} />}
           {activeView === 'Customers' && <CustomersView customers={customerRows} />}
           {activeView === 'Settings' && <SettingsView />}
         </section>
@@ -280,26 +283,26 @@ function Topbar({ title, bookings, onAdd }) {
   );
 }
 
-function Stats({ stats }) {
+function Stats({ stats, onOpenStatus }) {
   return (
     <section className="stats-row" aria-label="Booking summary">
-      <Stat icon={CalendarDays} value={stats.monthBookings} label="Bookings This Month" />
-      <Stat icon={Banknote} value={formatMoney(stats.depositsHeld)} label="Deposits Held" />
-      <Stat icon={CreditCard} value={formatMoney(stats.cardHolds)} label="Card Holds" />
-      <Stat icon={RefreshCcw} value={formatMoney(stats.refundsDue)} label="Refunds Due" tone="danger" />
+      <Stat icon={CalendarDays} value={stats.monthBookings} label="Bookings This Month" onClick={() => onOpenStatus('All Statuses')} />
+      <Stat icon={Banknote} value={formatMoney(stats.depositsHeld)} label="Deposits Held" onClick={() => onOpenStatus('Captured')} />
+      <Stat icon={CreditCard} value={formatMoney(stats.cardHolds)} label="Card Holds" onClick={() => onOpenStatus('Hold authorised')} />
+      <Stat icon={RefreshCcw} value={formatMoney(stats.refundsDue)} label="Refunds Due" tone="danger" onClick={() => onOpenStatus('Refund due')} />
     </section>
   );
 }
 
-function Stat({ icon: Icon, value, label, tone = 'normal' }) {
+function Stat({ icon: Icon, value, label, tone = 'normal', onClick }) {
   return (
-    <div className={`stat ${tone}`}>
+    <button className={`stat ${tone}`} onClick={onClick}>
       <span className="stat-icon"><Icon size={23} /></span>
       <div>
         <strong>{value}</strong>
         <small>{label}</small>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -507,13 +510,22 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
   );
 }
 
-function PaymentsView({ bookings, onSelect, onUpdate }) {
-  const paymentRows = bookings.filter((booking) => ['Pending', 'Hold authorised', 'Captured'].includes(booking.paymentStatus) || booking.releaseStatus === 'Refund due');
+function PaymentsView({ bookings, statusFilter, setStatusFilter, onSelect, onUpdate }) {
+  const paymentRows = bookings.filter((booking) => {
+    const isPaymentRow = ['Pending', 'Hold authorised', 'Captured'].includes(booking.paymentStatus) || booking.releaseStatus === 'Refund due';
+    const matchesFilter = statusFilter === 'All Statuses' || booking.paymentStatus === statusFilter || booking.releaseStatus === statusFilter || booking.status === statusFilter;
+    return isPaymentRow && matchesFilter;
+  });
 
   return (
     <section className="panel queue-panel">
       <div className="panel-title">
         <h2>Payments <span>{paymentRows.length}</span></h2>
+        <div className="panel-actions">
+          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+            {['All Statuses', 'Pending', 'Hold authorised', 'Captured', 'Refund due', 'Released'].map((status) => <option key={status}>{status}</option>)}
+          </select>
+        </div>
       </div>
       <div className="payment-guide">
         <div>
