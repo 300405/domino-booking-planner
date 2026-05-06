@@ -70,7 +70,7 @@ function App() {
       id: Math.max(0, ...bookings.map((booking) => booking.id)) + 1,
       ...form,
       deposit: Number(form.deposit),
-      status: form.paymentStatus === 'Hold authorised' ? 'Confirmed' : 'Pending',
+      status: form.paymentStatus === 'Paid in Square' ? 'Confirmed' : 'Pending',
       releaseStatus: 'Not released',
       createdBy: 'Sharon Bull',
       createdAt: '05/05/2026 16:10',
@@ -164,7 +164,7 @@ function Topbar({ title, bookings, onAdd }) {
         <button className="icon-button"><Menu size={19} /></button>
         <div>
           <h1>{title}</h1>
-          <p>Calendar, event details, deposits, card holds and refunds</p>
+          <p>Calendar, event details, Square deposits and refunds</p>
         </div>
       </div>
       <div className="topbar-actions">
@@ -197,8 +197,8 @@ function Stats({ stats, onOpenStatus }) {
   return (
     <section className="stats-row" aria-label="Booking summary">
       <Stat icon={CalendarDays} value={stats.monthBookings} label="Bookings This Month" onClick={() => onOpenStatus('This Month')} />
-      <Stat icon={Banknote} value={formatMoney(stats.depositsHeld)} label="Deposits Held" onClick={() => onOpenStatus('Captured')} />
-      <Stat icon={CreditCard} value={formatMoney(stats.cardHolds)} label="Card Holds" onClick={() => onOpenStatus('Hold authorised')} />
+      <Stat icon={Banknote} value={formatMoney(stats.depositsHeld)} label="Square Deposits Paid" onClick={() => onOpenStatus('Paid in Square')} />
+      <Stat icon={CreditCard} value={formatMoney(stats.cardHolds)} label="Deposits To Take" onClick={() => onOpenStatus('Pending')} />
       <Stat icon={RefreshCcw} value={formatMoney(stats.refundsDue)} label="Refunds Due" tone="danger" onClick={() => onOpenStatus('Refund due')} />
     </section>
   );
@@ -285,9 +285,9 @@ function CalendarPanel({ bookings, month, year, selectedId, onSelect, onPrev, on
       <div className="legend">
         <span><i className="dot confirmed" /> Confirmed</span>
         <span><i className="dot pending" /> Pending</span>
-        <span><i className="dot hold" /> Hold authorised</span>
+        <span><i className="dot hold" /> Paid in Square</span>
         <span><i className="dot refund" /> Refund due</span>
-        <span><i className="dot released" /> Released</span>
+        <span><i className="dot released" /> Refunded</span>
       </div>
     </section>
   );
@@ -326,8 +326,8 @@ function DetailPanel({ booking, onUpdate }) {
       {activeTab === 'History' && <History booking={booking} />}
       <div className="detail-actions">
         <button className="secondary" onClick={() => onUpdate(booking.id, { status: 'Confirmed' })}><Check size={16} /> Approve</button>
-        <button className="dark" onClick={() => onUpdate(booking.id, { paymentStatus: 'Captured', releaseStatus: 'Refund due', status: 'Refund due' })}><CreditCard size={16} /> Capture</button>
-        <button className="danger" onClick={() => onUpdate(booking.id, { releaseStatus: 'Released', status: 'Confirmed' })}><RefreshCcw size={16} /> Release / Refund</button>
+        <button className="dark" onClick={() => onUpdate(booking.id, { paymentStatus: 'Paid in Square', status: 'Confirmed' })}><CreditCard size={16} /> Mark Square Paid</button>
+        <button className="danger" onClick={() => onUpdate(booking.id, { releaseStatus: 'Refunded', status: 'Confirmed' })}><RefreshCcw size={16} /> Refund Done</button>
       </div>
     </aside>
   );
@@ -341,9 +341,9 @@ function Details({ booking }) {
     ['Phone', booking.phone],
     ['Deposit / Hold Amount', formatMoney(booking.deposit)],
     ['Date', formatDisplayDate(booking.date)],
-    ['Card Hold / Payment Status', booking.paymentStatus],
+    ['Square Payment Status', booking.paymentStatus],
     ['Time', `${booking.start} - ${booking.end}`],
-    ['Refund / Release Status', booking.releaseStatus],
+    ['Refund Status', booking.releaseStatus],
     ['Created', `${booking.createdAt} by ${booking.createdBy}`],
   ];
 
@@ -369,7 +369,7 @@ function Payments({ booking }) {
           <span>{booking.paymentStatus}</span>
         </div>
       </div>
-      <p>This screen is recording the payment status only. Real card holds need Stripe connected: the customer enters their card in Stripe, Stripe authorises the hold, then this app can capture it or release/refund it.</p>
+      <p>This screen records what you do in Square. Square is not connected yet, so take or refund the deposit in Square first, then mark it here.</p>
     </div>
   );
 }
@@ -383,7 +383,7 @@ function History({ booking }) {
     <div className="history-list">
       <span><Check size={15} /> Booking created by {booking.createdBy}</span>
       <span><CreditCard size={15} /> Payment status set to {booking.paymentStatus}</span>
-      <span><RefreshCcw size={15} /> Release status: {booking.releaseStatus}</span>
+      <span><RefreshCcw size={15} /> Refund status: {booking.releaseStatus}</span>
     </div>
   );
 }
@@ -395,7 +395,7 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
         <h2>Bookings & Payment Queue <span>{bookings.length}</span></h2>
         <div className="panel-actions">
           <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-            {['All Statuses', 'Confirmed', 'Pending', 'Refund due', 'Hold authorised', 'Captured', 'Released'].map((status) => <option key={status}>{status}</option>)}
+            {['All Statuses', 'Confirmed', 'Pending', 'Refund due', 'Paid in Square', 'Refunded'].map((status) => <option key={status}>{status}</option>)}
           </select>
           <button className="secondary"><Filter size={15} /> Filter</button>
         </div>
@@ -410,8 +410,8 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
               <th>Time</th>
               <th>Status</th>
               <th>Deposit / Hold</th>
-              <th>Card Hold / Payment</th>
-              <th>Refund / Release</th>
+              <th>Square Payment</th>
+              <th>Refund</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -428,9 +428,9 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
                 <td><StatusPill value={booking.releaseStatus} /></td>
                 <td>
                   <div className="row-actions">
-                    <button aria-label="Approve" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { status: 'Confirmed', paymentStatus: 'Hold authorised' }); }}><Check size={15} /></button>
-                    <button aria-label="Capture" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Captured', releaseStatus: 'Refund due', status: 'Refund due' }); }}><CreditCard size={15} /></button>
-                    <button aria-label="Release or refund" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { releaseStatus: 'Released', status: 'Confirmed' }); }}><RefreshCcw size={15} /></button>
+                    <button aria-label="Approve" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { status: 'Confirmed' }); }}><Check size={15} /></button>
+                    <button aria-label="Mark Square paid" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Paid in Square', status: 'Confirmed' }); }}><CreditCard size={15} /></button>
+                    <button aria-label="Mark refunded" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { releaseStatus: 'Refunded', status: 'Confirmed' }); }}><RefreshCcw size={15} /></button>
                     <button aria-label="More"><MoreVertical size={15} /></button>
                   </div>
                 </td>
@@ -446,7 +446,7 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
 
 function PaymentsView({ bookings, statusFilter, setStatusFilter, onSelect, onUpdate }) {
   const paymentRows = bookings.filter((booking) => {
-    const isPaymentRow = ['Pending', 'Hold authorised', 'Captured'].includes(booking.paymentStatus) || booking.releaseStatus === 'Refund due';
+    const isPaymentRow = ['Pending', 'Paid in Square'].includes(booking.paymentStatus) || ['Refund due', 'Refunded'].includes(booking.releaseStatus);
     const matchesFilter = statusFilter === 'All Statuses' || booking.paymentStatus === statusFilter || booking.releaseStatus === statusFilter || booking.status === statusFilter;
     return isPaymentRow && matchesFilter;
   });
@@ -457,18 +457,18 @@ function PaymentsView({ bookings, statusFilter, setStatusFilter, onSelect, onUpd
         <h2>Payments <span>{paymentRows.length}</span></h2>
         <div className="panel-actions">
           <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-            {['All Statuses', 'Pending', 'Hold authorised', 'Captured', 'Refund due', 'Released'].map((status) => <option key={status}>{status}</option>)}
+            {['All Statuses', 'Pending', 'Paid in Square', 'Refund due', 'Refunded'].map((status) => <option key={status}>{status}</option>)}
           </select>
         </div>
       </div>
       <div className="payment-guide">
         <div>
           <strong>What happens to the card payment?</strong>
-          <p>At the moment these buttons only update the booking record. To take real money, we connect Stripe so the customer pays through a secure Stripe checkout page.</p>
+          <p>At the moment these buttons only update the booking record. Take the deposit or refund in Square first, then use the buttons here to keep the planner up to date.</p>
         </div>
         <div>
-          <strong>Card hold flow</strong>
-          <p>Stripe authorises the deposit on the customer card. If the party is fine, you release it. If you need to keep it, you capture it. If already captured, you refund it.</p>
+          <strong>Square connection later</strong>
+          <p>When connected, the planner can send the customer to Square checkout, save the Square payment ID, and mark payments/refunds automatically.</p>
         </div>
       </div>
       <div className="table-wrap">
@@ -479,8 +479,8 @@ function PaymentsView({ bookings, statusFilter, setStatusFilter, onSelect, onUpd
               <th>Customer</th>
               <th>Date</th>
               <th>Deposit / Hold</th>
-              <th>Card Hold / Payment</th>
-              <th>Refund / Release</th>
+              <th>Square Payment</th>
+              <th>Refund</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -495,9 +495,9 @@ function PaymentsView({ bookings, statusFilter, setStatusFilter, onSelect, onUpd
                 <td><StatusPill value={booking.releaseStatus} /></td>
                 <td>
                   <div className="row-actions text-actions">
-                    <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Hold authorised', status: 'Confirmed' }); }}>Mark Hold</button>
-                    <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Captured', releaseStatus: 'Refund due', status: 'Refund due' }); }}>Capture</button>
-                    <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { releaseStatus: 'Released', status: 'Confirmed' }); }}>Release</button>
+                    <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Paid in Square', status: 'Confirmed' }); }}>Square Paid</button>
+                    <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { releaseStatus: 'Refund due', status: 'Refund due' }); }}>Refund Due</button>
+                    <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { releaseStatus: 'Refunded', status: 'Confirmed' }); }}>Refund Done</button>
                   </div>
                 </td>
               </tr>
@@ -557,7 +557,7 @@ function ReportsView({ stats, bookings }) {
         <dl>
           <div><dt>Confirmed parties</dt><dd>{confirmed}</dd></div>
           <div><dt>Pending parties</dt><dd>{pending}</dd></div>
-          <div><dt>Deposits captured</dt><dd>{formatMoney(stats.depositsHeld)}</dd></div>
+          <div><dt>Square deposits paid</dt><dd>{formatMoney(stats.depositsHeld)}</dd></div>
           <div><dt>Refunds due</dt><dd>{formatMoney(stats.refundsDue)}</dd></div>
         </dl>
       </div>
@@ -578,7 +578,7 @@ function SettingsView() {
         </label>
         <label>
           <span>Payment provider</span>
-          <input value="Stripe not connected yet" readOnly />
+          <input value="Square not connected yet" readOnly />
         </label>
         <label>
           <span>Booking storage</span>
@@ -611,9 +611,9 @@ function BookingModal({ form, setForm, onClose, onSubmit }) {
           <Field label="End time" type="time" value={form.end} onChange={(value) => setField('end', value)} />
           <Field label="Deposit / hold (£)" type="number" min="0" value={form.deposit} onChange={(value) => setField('deposit', value)} />
           <label>
-            <span>Card hold / payment</span>
+            <span>Square payment</span>
             <select value={form.paymentStatus} onChange={(event) => setField('paymentStatus', event.target.value)}>
-              {['Pending', 'Hold authorised', 'Captured'].map((status) => <option key={status}>{status}</option>)}
+              {['Pending', 'Paid in Square'].map((status) => <option key={status}>{status}</option>)}
             </select>
           </label>
           <label className="wide">
@@ -674,8 +674,8 @@ function buildStats(bookings, month, year) {
   });
   return {
     monthBookings: monthBookings.length,
-    depositsHeld: bookings.filter((booking) => booking.paymentStatus === 'Captured').reduce((sum, booking) => sum + booking.deposit, 0),
-    cardHolds: bookings.filter((booking) => booking.paymentStatus === 'Hold authorised').reduce((sum, booking) => sum + booking.deposit, 0),
+    depositsHeld: bookings.filter((booking) => booking.paymentStatus === 'Paid in Square').reduce((sum, booking) => sum + booking.deposit, 0),
+    cardHolds: bookings.filter((booking) => booking.paymentStatus === 'Pending').reduce((sum, booking) => sum + booking.deposit, 0),
     refundsDue: bookings.filter((booking) => booking.releaseStatus === 'Refund due').reduce((sum, booking) => sum + booking.deposit, 0),
   };
 }
@@ -704,17 +704,17 @@ function buildCustomers(bookings) {
 function buildNotifications(bookings) {
   const pending = bookings.filter((booking) => booking.status === 'Pending').length;
   const refundsDue = bookings.filter((booking) => booking.releaseStatus === 'Refund due').length;
-  const holdsOpen = bookings.filter((booking) => booking.paymentStatus === 'Hold authorised' && booking.releaseStatus !== 'Released').length;
+  const holdsOpen = bookings.filter((booking) => booking.paymentStatus === 'Pending').length;
   const notifications = [];
 
   if (pending) {
     notifications.push({ title: `${pending} pending booking${pending === 1 ? '' : 's'}`, detail: 'Review and approve the party details.' });
   }
   if (refundsDue) {
-    notifications.push({ title: `${refundsDue} refund due`, detail: 'Release or refund the deposit after checks.' });
+    notifications.push({ title: `${refundsDue} refund due`, detail: 'Refund the deposit in Square, then mark it done here.' });
   }
   if (holdsOpen) {
-    notifications.push({ title: `${holdsOpen} card hold to review`, detail: 'Capture only if you need to keep the deposit.' });
+    notifications.push({ title: `${holdsOpen} deposit to take`, detail: 'Take the deposit in Square, then mark it paid here.' });
   }
 
   return notifications;
