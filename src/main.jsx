@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import './styles.css';
 
-const bookingsStorageKey = 'domino-booking-planner-bookings-v1';
+const bookingsStorageKey = 'domino-booking-planner-bookings-v2';
 const today = parseDate('2026-05-05');
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -69,7 +69,6 @@ function App() {
     const next = {
       id: Math.max(0, ...bookings.map((booking) => booking.id)) + 1,
       ...form,
-      guests: Number(form.guests),
       deposit: Number(form.deposit),
       status: form.paymentStatus === 'Hold authorised' ? 'Confirmed' : 'Pending',
       releaseStatus: 'Not released',
@@ -339,14 +338,12 @@ function Details({ booking }) {
     ['Customer Name', booking.customerName],
     ['Event Name', booking.eventName],
     ['Email', booking.email],
-    ['Space / Area', booking.area],
     ['Phone', booking.phone],
     ['Deposit / Hold Amount', formatMoney(booking.deposit)],
     ['Date', formatDisplayDate(booking.date)],
     ['Card Hold / Payment Status', booking.paymentStatus],
     ['Time', `${booking.start} - ${booking.end}`],
     ['Refund / Release Status', booking.releaseStatus],
-    ['Party Size', `${booking.guests} guests`],
     ['Created', `${booking.createdAt} by ${booking.createdBy}`],
   ];
 
@@ -411,7 +408,6 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
               <th>Event</th>
               <th>Customer</th>
               <th>Time</th>
-              <th>Guests</th>
               <th>Status</th>
               <th>Deposit / Hold</th>
               <th>Card Hold / Payment</th>
@@ -426,7 +422,6 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
                 <td><strong>{booking.eventName}</strong></td>
                 <td>{booking.customerName}</td>
                 <td>{booking.start} - {booking.end}</td>
-                <td>{booking.guests}</td>
                 <td><StatusPill value={booking.status} /></td>
                 <td>{formatMoney(booking.deposit)}</td>
                 <td><StatusPill value={booking.paymentStatus} /></td>
@@ -612,15 +607,8 @@ function BookingModal({ form, setForm, onClose, onSubmit }) {
           <Field label="Email" type="email" value={form.email} onChange={(value) => setField('email', value)} />
           <Field label="Phone" value={form.phone} onChange={(value) => setField('phone', value)} />
           <Field label="Date" type="date" value={form.date} onChange={(value) => setField('date', value)} />
-          <label>
-            <span>Space / Area</span>
-            <select value={form.area} onChange={(event) => setField('area', event.target.value)}>
-              {['Function Room', 'Dining Snug', 'Back Bar', 'Garden Room', 'Whole Pub'].map((area) => <option key={area}>{area}</option>)}
-            </select>
-          </label>
           <Field label="Start time" type="time" value={form.start} onChange={(value) => setField('start', value)} />
           <Field label="End time" type="time" value={form.end} onChange={(value) => setField('end', value)} />
-          <Field label="Party size" type="number" min="1" value={form.guests} onChange={(value) => setField('guests', value)} />
           <Field label="Deposit / hold (£)" type="number" min="0" value={form.deposit} onChange={(value) => setField('deposit', value)} />
           <label>
             <span>Card hold / payment</span>
@@ -662,10 +650,8 @@ function defaultForm() {
     customerName: '',
     email: '',
     phone: '',
-    area: 'Function Room',
     start: '18:00',
     end: '23:00',
-    guests: 20,
     deposit: 100,
     paymentStatus: 'Pending',
     notes: '',
