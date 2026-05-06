@@ -126,7 +126,23 @@ tbody tr:hover { background: #fbfcfa; }
 .status-pill.not-released { background: #f3f0ea; color: #746858; }
 .row-actions { display: flex; gap: 6px; }
 .row-actions button { width: 31px; height: 31px; display: inline-grid; place-items: center; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: #42534c; }
+.row-actions.text-actions button { width: auto; min-width: 74px; padding: 0 10px; font-size: 12px; font-weight: 800; }
 .table-footer { min-height: 48px; display: flex; align-items: center; padding: 0 16px; color: var(--muted); font-size: 13px; font-weight: 700; }
+.payment-guide { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 16px; border-bottom: 1px solid var(--border-soft); background: #fbfcfa; }
+.payment-guide div { border: 1px solid var(--border); border-radius: 8px; background: #fff; padding: 14px; }
+.payment-guide strong { display: block; margin-bottom: 6px; }
+.payment-guide p { margin: 0; color: var(--muted); line-height: 1.5; font-size: 13px; }
+.report-grid { display: grid; gap: 18px; }
+.report-panel, .settings-panel { padding-bottom: 18px; }
+.report-panel h2 { margin: 0; padding: 18px; border-bottom: 1px solid var(--border-soft); font-size: 18px; }
+.report-panel dl { display: grid; grid-template-columns: repeat(4, minmax(130px, 1fr)); gap: 0; margin: 0; }
+.report-panel div { padding: 18px; border-right: 1px solid var(--border-soft); }
+.report-panel dt { color: var(--muted); font-size: 12px; font-weight: 800; }
+.report-panel dd { margin: 6px 0 0; font-size: 24px; font-weight: 850; }
+.settings-list { display: grid; gap: 14px; padding: 18px; max-width: 680px; }
+.settings-list label { display: grid; gap: 8px; }
+.settings-list span { color: var(--muted); font-size: 12px; font-weight: 850; }
+.settings-list input { height: 40px; border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; color: #273730; background: #fbfcfa; }
 
 .modal-backdrop { position: fixed; inset: 0; z-index: 40; background: rgba(13, 25, 21, .42); display: grid; place-items: center; padding: 20px; }
 .modal { width: min(720px, 100%); max-height: calc(100vh - 40px); overflow: auto; background: #fff; border-radius: 8px; box-shadow: var(--shadow); padding: 20px; display: grid; gap: 16px; }
@@ -162,6 +178,7 @@ tbody tr:hover { background: #fbfcfa; }
   .stat { border-right: 0; }
   .panel-title { align-items: flex-start; flex-direction: column; padding: 14px; }
   .panel-actions, .panel-actions select, .month-switch { width: 100%; }
+  .payment-guide, .report-panel dl { grid-template-columns: 1fr; }
   .calendar-panel { overflow-x: auto; }
   .calendar-grid { min-width: 680px; }
   .detail-grid, .field-grid { grid-template-columns: 1fr; }

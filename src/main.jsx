@@ -135,6 +135,7 @@ function App() {
   const [statusFilter, setStatusFilter] = useState('All Statuses');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(defaultForm());
+  const [activeView, setActiveView] = useState('Dashboard');
 
   useEffect(() => {
     localStorage.setItem(bookingsStorageKey, JSON.stringify(bookings));
@@ -146,6 +147,7 @@ function App() {
     return date.getMonth() === visibleMonth && date.getFullYear() === visibleYear;
   });
   const filteredBookings = bookings.filter((booking) => statusFilter === 'All Statuses' || booking.status === statusFilter || booking.paymentStatus === statusFilter || booking.releaseStatus === statusFilter);
+  const customerRows = useMemo(() => buildCustomers(bookings), [bookings]);
   const stats = buildStats(bookings, visibleMonth, visibleYear);
 
   function changeMonth(direction) {
@@ -178,12 +180,36 @@ function App() {
 
   return (
     <div className="app-shell">
-      <Sidebar />
+      <Sidebar activeView={activeView} onNavigate={setActiveView} />
       <main className="main">
-        <Topbar onAdd={() => setShowForm(true)} />
+        <Topbar title={activeView === 'Dashboard' ? 'The Domino Booking Planner' : activeView} onAdd={() => setShowForm(true)} />
         <section className="content">
-          <Stats stats={stats} />
-          <div className="workspace-grid">
+          {activeView === 'Dashboard' && (
+            <>
+              <Stats stats={stats} />
+              <div className="workspace-grid">
+                <CalendarPanel
+                  bookings={visibleBookings}
+                  month={visibleMonth}
+                  year={visibleYear}
+                  selectedId={selected?.id}
+                  onSelect={setSelectedId}
+                  onPrev={() => changeMonth(-1)}
+                  onNext={() => changeMonth(1)}
+                  onToday={() => {
+                    setVisibleMonth(today.getMonth());
+                    setVisibleYear(today.getFullYear());
+                  }}
+                />
+                <DetailPanel booking={selected} onUpdate={updateBooking} />
+              </div>
+              <QueuePanel bookings={filteredBookings} statusFilter={statusFilter} setStatusFilter={setStatusFilter} onSelect={setSelectedId} onUpdate={updateBooking} />
+            </>
+          )}
+          {activeView === 'Party Planner' && (
+            <QueuePanel bookings={filteredBookings} statusFilter={statusFilter} setStatusFilter={setStatusFilter} onSelect={setSelectedId} onUpdate={updateBooking} />
+          )}
+          {activeView === 'Calendar' && (
             <CalendarPanel
               bookings={visibleBookings}
               month={visibleMonth}
@@ -197,9 +223,11 @@ function App() {
                 setVisibleYear(today.getFullYear());
               }}
             />
-            <DetailPanel booking={selected} onUpdate={updateBooking} />
-          </div>
-          <QueuePanel bookings={filteredBookings} statusFilter={statusFilter} setStatusFilter={setStatusFilter} onSelect={setSelectedId} onUpdate={updateBooking} />
+          )}
+          {activeView === 'Payments' && <PaymentsView bookings={bookings} onSelect={setSelectedId} onUpdate={updateBooking} />}
+          {activeView === 'Customers' && <CustomersView customers={customerRows} />}
+          {activeView === 'Reports' && <ReportsView stats={stats} bookings={bookings} />}
+          {activeView === 'Settings' && <SettingsView />}
         </section>
       </main>
       {showForm && <BookingModal form={form} setForm={setForm} onClose={() => setShowForm(false)} onSubmit={submitBooking} />}
@@ -207,10 +235,10 @@ function App() {
   );
 }
 
-function Sidebar() {
+function Sidebar({ activeView, onNavigate }) {
   const nav = [
     [LayoutDashboard, 'Dashboard'],
-    [UsersRound, 'Party Planner', true],
+    [UsersRound, 'Party Planner'],
     [CalendarDays, 'Calendar'],
     [CreditCard, 'Payments'],
     [UserRound, 'Customers'],
@@ -225,8 +253,8 @@ function Sidebar() {
         <span>The Domino Booking Planner</span>
       </div>
       <nav className="nav-list" aria-label="Main navigation">
-        {nav.map(([Icon, label, active]) => (
-          <button className={`nav-item ${active ? 'active' : ''}`} key={label}>
+        {nav.map(([Icon, label]) => (
+          <button className={`nav-item ${activeView === label ? 'active' : ''}`} key={label} onClick={() => onNavigate(label)}>
             <Icon size={18} />
             <span>{label}</span>
           </button>
@@ -236,13 +264,13 @@ function Sidebar() {
   );
 }
 
-function Topbar({ onAdd }) {
+function Topbar({ title, onAdd }) {
   return (
     <header className="topbar">
       <div className="page-title">
         <button className="icon-button"><Menu size={19} /></button>
         <div>
-          <h1>The Domino Booking Planner</h1>
+          <h1>{title}</h1>
           <p>Calendar, event details, deposits, card holds and refunds</p>
         </div>
       </div>
@@ -405,7 +433,7 @@ function Payments({ booking }) {
           <span>{booking.paymentStatus}</span>
         </div>
       </div>
-      <p>Stripe setup: create a Checkout Session or PaymentIntent with manual capture for an authorised card hold. Release by cancelling the uncaptured PaymentIntent, or refund after capture.</p>
+      <p>This screen is recording the payment status only. Real card holds need Stripe connected: the customer enters their card in Stripe, Stripe authorises the hold, then this app can capture it or release/refund it.</p>
     </div>
   );
 }
@@ -478,6 +506,142 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
         </table>
       </div>
       <footer className="table-footer">Showing {bookings.length} bookings</footer>
+    </section>
+  );
+}
+
+function PaymentsView({ bookings, onSelect, onUpdate }) {
+  const paymentRows = bookings.filter((booking) => ['Pending', 'Hold authorised', 'Captured'].includes(booking.paymentStatus) || booking.releaseStatus === 'Refund due');
+
+  return (
+    <section className="panel queue-panel">
+      <div className="panel-title">
+        <h2>Payments <span>{paymentRows.length}</span></h2>
+      </div>
+      <div className="payment-guide">
+        <div>
+          <strong>What happens to the card payment?</strong>
+          <p>At the moment these buttons only update the booking record. To take real money, we connect Stripe so the customer pays through a secure Stripe checkout page.</p>
+        </div>
+        <div>
+          <strong>Card hold flow</strong>
+          <p>Stripe authorises the deposit on the customer card. If the party is fine, you release it. If you need to keep it, you capture it. If already captured, you refund it.</p>
+        </div>
+      </div>
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Deposit / Hold</th>
+              <th>Card Hold / Payment</th>
+              <th>Refund / Release</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paymentRows.map((booking) => (
+              <tr key={booking.id} onClick={() => onSelect(booking.id)}>
+                <td><strong>{booking.eventName}</strong></td>
+                <td>{booking.customerName}</td>
+                <td>{formatDisplayDate(booking.date)}</td>
+                <td>{formatMoney(booking.deposit)}</td>
+                <td><StatusPill value={booking.paymentStatus} /></td>
+                <td><StatusPill value={booking.releaseStatus} /></td>
+                <td>
+                  <div className="row-actions text-actions">
+                    <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Hold authorised', status: 'Confirmed' }); }}>Mark Hold</button>
+                    <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Captured', releaseStatus: 'Refund due', status: 'Refund due' }); }}>Capture</button>
+                    <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { releaseStatus: 'Released', status: 'Confirmed' }); }}>Release</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function CustomersView({ customers }) {
+  return (
+    <section className="panel queue-panel">
+      <div className="panel-title">
+        <h2>Customers <span>{customers.length}</span></h2>
+      </div>
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Bookings</th>
+              <th>Last Event</th>
+              <th>Total Deposits</th>
+            </tr>
+          </thead>
+          <tbody>
+            {customers.map((customer) => (
+              <tr key={customer.name}>
+                <td><strong>{customer.name}</strong></td>
+                <td>{customer.email}</td>
+                <td>{customer.phone}</td>
+                <td>{customer.bookings}</td>
+                <td>{customer.lastEvent}</td>
+                <td>{formatMoney(customer.totalDeposits)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function ReportsView({ stats, bookings }) {
+  const confirmed = bookings.filter((booking) => booking.status === 'Confirmed').length;
+  const pending = bookings.filter((booking) => booking.status === 'Pending').length;
+
+  return (
+    <section className="report-grid">
+      <Stats stats={stats} />
+      <div className="panel report-panel">
+        <h2>Booking Snapshot</h2>
+        <dl>
+          <div><dt>Confirmed parties</dt><dd>{confirmed}</dd></div>
+          <div><dt>Pending parties</dt><dd>{pending}</dd></div>
+          <div><dt>Deposits captured</dt><dd>{formatMoney(stats.depositsHeld)}</dd></div>
+          <div><dt>Refunds due</dt><dd>{formatMoney(stats.refundsDue)}</dd></div>
+        </dl>
+      </div>
+    </section>
+  );
+}
+
+function SettingsView() {
+  return (
+    <section className="panel settings-panel">
+      <div className="panel-title">
+        <h2>Settings</h2>
+      </div>
+      <div className="settings-list">
+        <label>
+          <span>Default deposit / hold amount</span>
+          <input value="£100" readOnly />
+        </label>
+        <label>
+          <span>Payment provider</span>
+          <input value="Stripe not connected yet" readOnly />
+        </label>
+        <label>
+          <span>Booking storage</span>
+          <input value="This browser only until database is added" readOnly />
+        </label>
+      </div>
     </section>
   );
 }
@@ -580,6 +744,27 @@ function buildStats(bookings, month, year) {
     cardHolds: bookings.filter((booking) => booking.paymentStatus === 'Hold authorised').reduce((sum, booking) => sum + booking.deposit, 0),
     refundsDue: bookings.filter((booking) => booking.releaseStatus === 'Refund due').reduce((sum, booking) => sum + booking.deposit, 0),
   };
+}
+
+function buildCustomers(bookings) {
+  const customers = new Map();
+
+  bookings.forEach((booking) => {
+    const current = customers.get(booking.customerName) || {
+      name: booking.customerName,
+      email: booking.email,
+      phone: booking.phone,
+      bookings: 0,
+      lastEvent: booking.eventName,
+      totalDeposits: 0,
+    };
+    current.bookings += 1;
+    current.lastEvent = booking.eventName;
+    current.totalDeposits += booking.deposit;
+    customers.set(booking.customerName, current);
+  });
+
+  return Array.from(customers.values());
 }
 
 function getCalendarDays(year, month) {
