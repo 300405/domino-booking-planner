@@ -28,103 +28,7 @@ const today = parseDate('2026-05-05');
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-const seedBookings = [
-  {
-    id: 1,
-    date: '2026-05-08',
-    eventName: 'Lewis birthday',
-    customerName: 'Lewis Clarke',
-    email: 'lewis.clarke@example.com',
-    phone: '07712 345678',
-    area: 'Function Room',
-    start: '19:00',
-    end: '23:00',
-    guests: 28,
-    deposit: 150,
-    status: 'Confirmed',
-    paymentStatus: 'Hold authorised',
-    releaseStatus: 'Released',
-    createdBy: 'Sharon Bull',
-    createdAt: '05/05/2026 12:18',
-    notes: 'Birthday decorations allowed from 17:00. Pre-order required for food.',
-  },
-  {
-    id: 2,
-    date: '2026-05-10',
-    eventName: 'Anniversary meal',
-    customerName: 'Sarah & Mark Davies',
-    email: 'sarah.davies@example.com',
-    phone: '07902 112233',
-    area: 'Dining Snug',
-    start: '18:30',
-    end: '22:30',
-    guests: 18,
-    deposit: 100,
-    status: 'Confirmed',
-    paymentStatus: 'Hold authorised',
-    releaseStatus: 'Released',
-    createdBy: 'Paul Brown',
-    createdAt: '04/05/2026 15:40',
-    notes: 'Quiet table plan. Sparkling wine on arrival.',
-  },
-  {
-    id: 3,
-    date: '2026-05-14',
-    eventName: 'Quiz night hire',
-    customerName: 'Tom Reynolds',
-    email: 'tom.reynolds@example.com',
-    phone: '07881 340900',
-    area: 'Back Bar',
-    start: '19:00',
-    end: '22:30',
-    guests: 40,
-    deposit: 100,
-    status: 'Confirmed',
-    paymentStatus: 'Hold authorised',
-    releaseStatus: 'Not released',
-    createdBy: 'Sharon Bull',
-    createdAt: '03/05/2026 10:05',
-    notes: 'Microphone and screen needed. Bar tab paid separately.',
-  },
-  {
-    id: 4,
-    date: '2026-05-17',
-    eventName: 'Engagement party',
-    customerName: 'Emily Watson',
-    email: 'emily.watson@example.com',
-    phone: '07798 551200',
-    area: 'Function Room',
-    start: '17:00',
-    end: '23:00',
-    guests: 30,
-    deposit: 150,
-    status: 'Pending',
-    paymentStatus: 'Pending',
-    releaseStatus: 'Not released',
-    createdBy: 'Paul Brown',
-    createdAt: '05/05/2026 09:27',
-    notes: 'Awaiting final guest count and card authorisation.',
-  },
-  {
-    id: 5,
-    date: '2026-05-26',
-    eventName: 'Half term hire',
-    customerName: 'Lucy Bennett',
-    email: 'lucy.bennett@example.com',
-    phone: '07776 661809',
-    area: 'Garden Room',
-    start: '12:00',
-    end: '16:00',
-    guests: 25,
-    deposit: 100,
-    status: 'Refund due',
-    paymentStatus: 'Captured',
-    releaseStatus: 'Refund due',
-    createdBy: 'Sharon Bull',
-    createdAt: '02/05/2026 13:11',
-    notes: 'Deposit captured after damage check. Refund now due.',
-  },
-];
+const seedBookings = [];
 
 function App() {
   const [bookings, setBookings] = useState(loadBookings);
@@ -135,6 +39,7 @@ function App() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(defaultForm());
   const [activeView, setActiveView] = useState('Party Planner');
+  const [showMonthList, setShowMonthList] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(bookingsStorageKey, JSON.stringify(bookings));
@@ -186,9 +91,15 @@ function App() {
           {activeView === 'Party Planner' && (
             <>
               <Stats stats={stats} onOpenStatus={(status) => {
+                if (status === 'This Month') {
+                  setShowMonthList(true);
+                  return;
+                }
                 setStatusFilter(status);
+                setShowMonthList(false);
                 setActiveView(status === 'All Statuses' ? 'Party Planner' : 'Payments');
               }} />
+              {showMonthList && <MonthBookingsList bookings={visibleBookings} month={visibleMonth} year={visibleYear} onClose={() => setShowMonthList(false)} onSelect={setSelectedId} />}
               <div className="workspace-grid">
                 <CalendarPanel
                   bookings={visibleBookings}
@@ -286,7 +197,7 @@ function Topbar({ title, bookings, onAdd }) {
 function Stats({ stats, onOpenStatus }) {
   return (
     <section className="stats-row" aria-label="Booking summary">
-      <Stat icon={CalendarDays} value={stats.monthBookings} label="Bookings This Month" onClick={() => onOpenStatus('All Statuses')} />
+      <Stat icon={CalendarDays} value={stats.monthBookings} label="Bookings This Month" onClick={() => onOpenStatus('This Month')} />
       <Stat icon={Banknote} value={formatMoney(stats.depositsHeld)} label="Deposits Held" onClick={() => onOpenStatus('Captured')} />
       <Stat icon={CreditCard} value={formatMoney(stats.cardHolds)} label="Card Holds" onClick={() => onOpenStatus('Hold authorised')} />
       <Stat icon={RefreshCcw} value={formatMoney(stats.refundsDue)} label="Refunds Due" tone="danger" onClick={() => onOpenStatus('Refund due')} />
@@ -303,6 +214,34 @@ function Stat({ icon: Icon, value, label, tone = 'normal', onClick }) {
         <small>{label}</small>
       </div>
     </button>
+  );
+}
+
+function MonthBookingsList({ bookings, month, year, onClose, onSelect }) {
+  return (
+    <section className="panel month-list">
+      <div className="panel-title">
+        <h2>{monthNames[month]} {year} Bookings <span>{bookings.length}</span></h2>
+        <button className="icon-button" onClick={onClose} aria-label="Close month bookings"><X size={18} /></button>
+      </div>
+      {bookings.length > 0 ? (
+        <div className="month-bookings">
+          {bookings.map((booking) => (
+            <button key={booking.id} onClick={() => onSelect(booking.id)}>
+              <strong>{booking.eventName}</strong>
+              <span>{formatDisplayDate(booking.date)} · {booking.start} - {booking.end} · {booking.customerName}</span>
+              <StatusPill value={booking.status} />
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="empty-list">
+          <CalendarDays size={26} />
+          <strong>No bookings this month</strong>
+          <span>Add a booking and it will appear in this list.</span>
+        </div>
+      )}
+    </section>
   );
 }
 
