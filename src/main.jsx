@@ -9,7 +9,6 @@ import {
   ChevronRight,
   CreditCard,
   Filter,
-  LayoutDashboard,
   Menu,
   MoreVertical,
   Plus,
@@ -135,7 +134,7 @@ function App() {
   const [statusFilter, setStatusFilter] = useState('All Statuses');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(defaultForm());
-  const [activeView, setActiveView] = useState('Dashboard');
+  const [activeView, setActiveView] = useState('Party Planner');
 
   useEffect(() => {
     localStorage.setItem(bookingsStorageKey, JSON.stringify(bookings));
@@ -182,9 +181,9 @@ function App() {
     <div className="app-shell">
       <Sidebar activeView={activeView} onNavigate={setActiveView} />
       <main className="main">
-        <Topbar title={activeView === 'Dashboard' ? 'The Domino Booking Planner' : activeView} onAdd={() => setShowForm(true)} />
+        <Topbar title={activeView} onAdd={() => setShowForm(true)} />
         <section className="content">
-          {activeView === 'Dashboard' && (
+          {activeView === 'Party Planner' && (
             <>
               <Stats stats={stats} />
               <div className="workspace-grid">
@@ -206,27 +205,8 @@ function App() {
               <QueuePanel bookings={filteredBookings} statusFilter={statusFilter} setStatusFilter={setStatusFilter} onSelect={setSelectedId} onUpdate={updateBooking} />
             </>
           )}
-          {activeView === 'Party Planner' && (
-            <QueuePanel bookings={filteredBookings} statusFilter={statusFilter} setStatusFilter={setStatusFilter} onSelect={setSelectedId} onUpdate={updateBooking} />
-          )}
-          {activeView === 'Calendar' && (
-            <CalendarPanel
-              bookings={visibleBookings}
-              month={visibleMonth}
-              year={visibleYear}
-              selectedId={selected?.id}
-              onSelect={setSelectedId}
-              onPrev={() => changeMonth(-1)}
-              onNext={() => changeMonth(1)}
-              onToday={() => {
-                setVisibleMonth(today.getMonth());
-                setVisibleYear(today.getFullYear());
-              }}
-            />
-          )}
           {activeView === 'Payments' && <PaymentsView bookings={bookings} onSelect={setSelectedId} onUpdate={updateBooking} />}
           {activeView === 'Customers' && <CustomersView customers={customerRows} />}
-          {activeView === 'Reports' && <ReportsView stats={stats} bookings={bookings} />}
           {activeView === 'Settings' && <SettingsView />}
         </section>
       </main>
@@ -237,12 +217,9 @@ function App() {
 
 function Sidebar({ activeView, onNavigate }) {
   const nav = [
-    [LayoutDashboard, 'Dashboard'],
     [UsersRound, 'Party Planner'],
-    [CalendarDays, 'Calendar'],
     [CreditCard, 'Payments'],
     [UserRound, 'Customers'],
-    [Banknote, 'Reports'],
     [Settings, 'Settings'],
   ];
 
