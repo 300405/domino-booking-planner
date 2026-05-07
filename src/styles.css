@@ -110,6 +110,7 @@ button { cursor: pointer; }
 .detail-grid span, .modal label span { color: var(--muted); font-size: 12px; font-weight: 850; }
 .detail-grid output { font-size: 13px; font-weight: 780; color: var(--text); }
 .detail-actions { padding: 14px; display: grid; grid-template-columns: 1fr; gap: 10px; }
+.detail-link { text-decoration: none; }
 .payment-stack { padding: 16px; display: grid; gap: 14px; }
 .payment-card { border: 1px solid var(--border); border-radius: 8px; padding: 14px; display: grid; grid-template-columns: 44px 1fr; align-items: center; gap: 12px; background: var(--surface-soft); }
 .payment-card strong, .payment-card span { display: block; }

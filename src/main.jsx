@@ -369,6 +369,7 @@ function DetailPanel({ booking, onUpdate, onClose }) {
       {activeTab === 'Notes' && <Notes booking={booking} />}
       {activeTab === 'History' && <History booking={booking} />}
       <div className="detail-actions">
+        <a className="secondary detail-link" href={buildGoogleCalendarUrl(booking)} target="_blank" rel="noreferrer"><CalendarDays size={16} /> Add to Google Calendar</a>
         <button className="secondary" onClick={() => onUpdate(booking.id, { status: 'Confirmed' })}><Check size={16} /> Approve</button>
         <button className="dark" onClick={() => onUpdate(booking.id, { paymentStatus: 'Paid in Square', status: 'Confirmed' })}><CreditCard size={16} /> Mark Square Paid</button>
         <button className="danger" onClick={() => onUpdate(booking.id, { releaseStatus: 'Refunded', status: 'Confirmed' })}><RefreshCcw size={16} /> Refund Done</button>
@@ -490,6 +491,7 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
                 <td>
                   <div className="row-actions">
                     <button aria-label="View booking" onClick={(event) => { event.stopPropagation(); onSelect(booking.id); }}>View</button>
+                    <a className="table-link" href={buildGoogleCalendarUrl(booking)} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>Calendar</a>
                     <a className="table-link" href={booking.squareCheckoutUrl || defaultSquareCheckoutUrl} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>Pay Link</a>
                     <button aria-label="Approve" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { status: 'Confirmed' }); }}><Check size={15} /></button>
                     <button aria-label="Mark Square paid" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Paid in Square', status: 'Confirmed' }); }}><CreditCard size={15} /></button>
@@ -561,6 +563,7 @@ function PaymentsView({ bookings, statusFilter, setStatusFilter, onSelect, onUpd
                 <td>
                   <div className="row-actions text-actions">
                     <button onClick={(event) => { event.stopPropagation(); onSelect(booking.id); }}>View</button>
+                    <a className="table-link" href={buildGoogleCalendarUrl(booking)} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>Calendar</a>
                     <a className="table-link" href={booking.squareCheckoutUrl || defaultSquareCheckoutUrl} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>Open Link</a>
                     <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Paid in Square', status: 'Confirmed' }); }}>Square Paid</button>
                     <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { releaseStatus: 'Refund due', status: 'Refund due' }); }}>Refund Due</button>
@@ -822,6 +825,38 @@ function buildNotifications(bookings) {
   }
 
   return notifications;
+}
+
+function buildGoogleCalendarUrl(booking) {
+  const title = booking.eventName || 'Private party booking';
+  const start = googleDateTime(booking.date, booking.start);
+  const end = googleDateTime(booking.date, booking.end);
+  const checkoutUrl = booking.squareCheckoutUrl || defaultSquareCheckoutUrl;
+  const details = [
+    `Customer: ${booking.customerName}`,
+    `Phone: ${booking.phone || 'Not added'}`,
+    `Email: ${booking.email || 'Not added'}`,
+    `Deposit: ${formatMoney(booking.deposit)}`,
+    `Square payment: ${booking.paymentStatus}`,
+    `Square reference: ${booking.squareReference || 'Not added'}`,
+    `Square checkout link: ${checkoutUrl}`,
+    '',
+    booking.notes || '',
+  ].join('\n');
+
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    dates: `${start}/${end}`,
+    details,
+    ctz: 'Europe/London',
+  });
+
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+function googleDateTime(date, time) {
+  return `${date.replaceAll('-', '')}T${time.replace(':', '')}00`;
 }
 
 function getCalendarDays(year, month) {
