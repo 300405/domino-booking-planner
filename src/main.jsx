@@ -23,13 +23,31 @@ import {
 } from 'lucide-react';
 import './styles.css';
 
-const bookingsStorageKey = 'domino-booking-planner-bookings-v2';
+const bookingsStorageKey = 'domino-booking-planner-bookings-v3';
 const today = parseDate('2026-05-05');
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-const seedBookings = [];
 const defaultSquareCheckoutUrl = 'https://square.link/u/uS1Gm7Gx';
+
+const seedBookings = [
+  importedBooking(1, '2026-05-09', '18th Birthday party Allan dj', '18th Birthday party Allan dj', '19:00', '00:00', 'This is an event reminder'),
+  importedBooking(2, '2026-05-09', 'Mr Obrien for Party Booking', 'Mr Obrien', '18:00', '23:00', 'APPOINTMENT DETAILS\nSERVICE: Party Booking\nPROVIDER: The Domino Inn\nFROM: 06:00 PM\nTO: 11:00 PM\nNAME: Mr Obrien'),
+  importedBooking(3, '2026-05-16', '63rd birthday party. Allan to dj', '63rd birthday party. Allan to dj', '18:30', '20:30', ''),
+  importedBooking(4, '2026-05-30', '18th Allan to dj', '18th Allan to dj', '17:00', '19:00', ''),
+  importedBooking(5, '2026-05-30', 'Ashley duncan for Party Booking', 'Ashley duncan', '17:15', '22:15', 'APPOINTMENT DETAILS\nSERVICE: Party Booking\nPROVIDER: The Domino Inn\nFROM: 05:15 PM\nTO: 10:15 PM\nNAME: Ashley duncan'),
+  importedBooking(6, '2026-06-05', 'Luke for Party Booking', 'Luke', '18:45', '23:45', 'APPOINTMENT DETAILS\nSERVICE: Party Booking\nPROVIDER: The Domino Inn\nFROM: 06:45 PM\nTO: 11:45 PM\nNAME: Luke'),
+  importedBooking(7, '2026-06-06', 'Charity night Allan to dj', 'Charity night Allan to dj', '23:30', '01:30', ''),
+  importedBooking(8, '2026-06-20', 'Sams 70s', 'Sam', '20:00', '22:00', ''),
+  importedBooking(9, '2026-06-20', 'Sam for Party Booking', 'Sam', '15:00', '20:00', 'APPOINTMENT DETAILS\nSERVICE: Party Booking\nPROVIDER: The Domino Inn\nFROM: 03:00 PM\nTO: 08:00 PM\nNOTES: Sam’s 70th\nNAME: Sam'),
+  importedBooking(10, '2026-07-11', 'Wedding reception, free Dj', 'Wedding reception', '18:00', '00:00', ''),
+  importedBooking(11, '2026-07-12', 'Robyn', 'Robyn', '12:00', '15:00', ''),
+  importedBooking(12, '2026-07-18', 'Linda and Richard’s engagement party', 'Linda and Richard', '20:00', '22:00', 'Allan to dj'),
+  importedBooking(13, '2026-07-25', '40th Allan to dj', '40th Allan to dj', '17:30', '19:30', ''),
+  importedBooking(14, '2026-08-01', 'Wedding evening party.', 'Wedding evening party', '19:00', '00:00', ''),
+  importedBooking(15, '2026-08-08', '30th house system only', '30th house system only', '19:00', '00:00', ''),
+  importedBooking(16, '2026-08-28', '21st party Stacey oneil', 'Stacey Oneil', '19:00', '00:00', 'free dj booked daren baker £150'),
+  importedBooking(17, '2026-09-05', 'Hollie for Party Booking', 'Hollie', '18:45', '23:45', 'APPOINTMENT DETAILS\nSERVICE: Party Booking\nPROVIDER: The Domino Inn\nFROM: 06:45 PM\nTO: 11:45 PM\nNAME: Hollie'),
+];
 
 function App() {
   const [bookings, setBookings] = useState(loadBookings);
@@ -146,7 +164,7 @@ function App() {
           {activeView === 'Settings' && <SettingsView onClearBookings={() => {
             setBookings([]);
             setSelectedId(null);
-            localStorage.removeItem(bookingsStorageKey);
+            localStorage.setItem(bookingsStorageKey, '[]');
           }} />}
         </section>
       </main>
@@ -781,11 +799,34 @@ function defaultForm() {
   };
 }
 
+function importedBooking(id, date, eventName, customerName, start, end, notes) {
+  return {
+    id,
+    date,
+    eventName,
+    customerName,
+    email: '',
+    phone: '',
+    start,
+    end,
+    deposit: 100,
+    squareCheckoutUrl: defaultSquareCheckoutUrl,
+    squareReference: '',
+    status: 'Pending',
+    paymentStatus: 'Pending',
+    releaseStatus: 'Not released',
+    createdBy: 'Google Calendar import',
+    createdAt: '07/05/2026 09:00',
+    notes,
+  };
+}
+
 function loadBookings() {
   try {
     localStorage.removeItem('domino-booking-planner-bookings-v1');
+    localStorage.removeItem('domino-booking-planner-bookings-v2');
     const stored = JSON.parse(localStorage.getItem(bookingsStorageKey));
-    return Array.isArray(stored) && stored.length ? stored : seedBookings;
+    return Array.isArray(stored) ? stored : seedBookings;
   } catch {
     return seedBookings;
   }
