@@ -134,7 +134,7 @@ function App() {
             </>
           )}
           {activeView === 'Payments' && <PaymentsView bookings={bookings} statusFilter={statusFilter} setStatusFilter={setStatusFilter} onSelect={openBooking} onUpdate={updateBooking} />}
-          {activeView === 'Customers' && <CustomersView customers={customerRows} />}
+          {activeView === 'Customers' && <CustomersView customers={customerRows} bookings={bookings} onSelectBooking={openBooking} />}
           {activeView === 'Settings' && <SettingsView onClearBookings={() => {
             setBookings([]);
             setSelectedId(null);
@@ -551,39 +551,66 @@ function PaymentsView({ bookings, statusFilter, setStatusFilter, onSelect, onUpd
   );
 }
 
-function CustomersView({ customers }) {
+function CustomersView({ customers, bookings, onSelectBooking }) {
+  const [selectedCustomer, setSelectedCustomer] = useState(customers[0]?.name || '');
+  const customerBookings = bookings.filter((booking) => booking.customerName === selectedCustomer);
+
   return (
-    <section className="panel queue-panel">
-      <div className="panel-title">
-        <h2>Customers <span>{customers.length}</span></h2>
-      </div>
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Bookings</th>
-              <th>Last Event</th>
-              <th>Total Deposits</th>
-            </tr>
-          </thead>
-          <tbody>
-            {customers.map((customer) => (
-              <tr key={customer.name}>
-                <td><strong>{customer.name}</strong></td>
-                <td>{customer.email}</td>
-                <td>{customer.phone}</td>
-                <td>{customer.bookings}</td>
-                <td>{customer.lastEvent}</td>
-                <td>{formatMoney(customer.totalDeposits)}</td>
+    <div className="customers-layout">
+      <section className="panel queue-panel">
+        <div className="panel-title">
+          <h2>Customers <span>{customers.length}</span></h2>
+        </div>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Bookings</th>
+                <th>Last Event</th>
+                <th>Total Deposits</th>
               </tr>
+            </thead>
+            <tbody>
+              {customers.map((customer) => (
+                <tr className={selectedCustomer === customer.name ? 'selected-row' : ''} key={customer.name} onClick={() => setSelectedCustomer(customer.name)}>
+                  <td><strong>{customer.name}</strong></td>
+                  <td>{customer.email}</td>
+                  <td>{customer.phone}</td>
+                  <td>{customer.bookings}</td>
+                  <td>{customer.lastEvent}</td>
+                  <td>{formatMoney(customer.totalDeposits)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <div className="panel customer-bookings">
+        <div className="panel-title">
+          <h2>{selectedCustomer || 'Customer'} Bookings <span>{customerBookings.length}</span></h2>
+        </div>
+        {customerBookings.length > 0 ? (
+          <div className="month-bookings">
+            {customerBookings.map((booking) => (
+              <button key={booking.id} onClick={() => onSelectBooking(booking.id)}>
+                <strong>{booking.eventName}</strong>
+                <span>{formatDisplayDate(booking.date)} · {booking.start} - {booking.end}</span>
+                <StatusPill value={booking.status} />
+              </button>
             ))}
-          </tbody>
-        </table>
+          </div>
+        ) : (
+          <div className="empty-list">
+            <UserRound size={26} />
+            <strong>No customer selected</strong>
+            <span>Click a customer to see their bookings.</span>
+          </div>
+        )}
       </div>
-    </section>
+    </div>
   );
 }
 

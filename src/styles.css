@@ -128,6 +128,7 @@ th, td { height: 50px; border-bottom: 1px solid var(--border-soft); padding: 0 1
 th { height: 42px; background: #fbfcfa; color: #53635d; font-size: 12px; font-weight: 850; }
 tbody tr { cursor: pointer; }
 tbody tr:hover { background: #fbfcfa; }
+tbody tr.selected-row { background: var(--green-soft); }
 .status-pill { min-height: 25px; border-radius: 6px; padding: 4px 8px; display: inline-flex; align-items: center; font-size: 12px; font-weight: 850; background: var(--green-soft); color: var(--green); }
 .status-pill.pending { background: var(--blue-soft); color: var(--blue); }
 .status-pill.refund-due, .status-pill.captured { background: var(--red-soft); color: var(--red); }
@@ -149,6 +150,8 @@ tbody tr:hover { background: #fbfcfa; }
 .month-bookings span { color: var(--muted); font-size: 13px; font-weight: 700; }
 .empty-list { min-height: 150px; display: grid; place-items: center; align-content: center; gap: 8px; color: var(--muted); text-align: center; padding: 24px; }
 .empty-list strong { color: var(--text); }
+.customers-layout { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(320px, .8fr); gap: 18px; align-items: start; }
+.customer-bookings { overflow: hidden; }
 .payment-guide div { border: 1px solid var(--border); border-radius: 8px; background: #fff; padding: 14px; }
 .payment-guide strong { display: block; margin-bottom: 6px; }
 .payment-guide p { margin: 0; color: var(--muted); line-height: 1.5; font-size: 13px; }
@@ -204,6 +207,7 @@ tbody tr:hover { background: #fbfcfa; }
   .panel-title { align-items: flex-start; flex-direction: column; padding: 14px; }
   .panel-actions, .panel-actions select, .month-switch { width: 100%; }
   .payment-guide, .report-panel dl { grid-template-columns: 1fr; }
+  .customers-layout { grid-template-columns: 1fr; }
   .month-bookings button { grid-template-columns: 1fr; }
   .calendar-panel { overflow-x: auto; }
   .calendar-grid { min-width: 680px; }
