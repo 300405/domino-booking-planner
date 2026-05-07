@@ -798,7 +798,7 @@ function StatusPill({ value }) {
 function defaultForm() {
   return {
     date: '2026-05-30',
-    eventName: 'Private party',
+    eventName: '',
     customerName: '',
     email: '',
     phone: '',
