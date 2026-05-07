@@ -105,10 +105,15 @@ button { cursor: pointer; }
 .tabs { display: flex; gap: 6px; padding: 12px 14px; border-bottom: 1px solid var(--border-soft); }
 .tabs button { height: 32px; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: #44554f; padding: 0 11px; font-size: 12px; font-weight: 850; }
 .tabs button.active { background: var(--green); border-color: var(--green); color: #fff; }
+.details-stack { display: grid; }
 .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
 .detail-grid label { min-height: 74px; border-right: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); padding: 13px 15px; display: grid; align-content: center; gap: 7px; }
 .detail-grid span, .modal label span { color: var(--muted); font-size: 12px; font-weight: 850; }
 .detail-grid output { font-size: 13px; font-weight: 780; color: var(--text); }
+.front-notes { margin: 14px; border: 1px solid var(--border); border-radius: 8px; background: #fbfcfa; padding: 14px; display: grid; gap: 8px; }
+.front-notes span { color: var(--muted); font-size: 12px; font-weight: 850; }
+.front-notes textarea { width: 100%; min-height: 116px; resize: vertical; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: #34443e; font-size: 13px; line-height: 1.5; padding: 12px; outline: 0; }
+.front-notes textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(21, 90, 66, .12); }
 .detail-actions { padding: 14px; display: grid; grid-template-columns: 1fr; gap: 10px; }
 .detail-link { text-decoration: none; }
 .payment-stack { padding: 16px; display: grid; gap: 14px; }

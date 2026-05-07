@@ -391,7 +391,7 @@ function DetailPanel({ booking, onUpdate, onDelete, onClose }) {
           <button className={activeTab === tab ? 'active' : ''} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>
         ))}
       </div>
-      {activeTab === 'Details' && <Details booking={booking} />}
+      {activeTab === 'Details' && <Details booking={booking} onUpdate={onUpdate} />}
       {activeTab === 'Payments' && <Payments booking={booking} />}
       {activeTab === 'Notes' && <Notes booking={booking} />}
       {activeTab === 'History' && <History booking={booking} />}
@@ -427,7 +427,7 @@ function BookingDetailsModal({ booking, onClose, onUpdate, onDelete }) {
   );
 }
 
-function Details({ booking }) {
+function Details({ booking, onUpdate }) {
   const fields = [
     ['Customer Name', booking.customerName],
     ['Event Name', booking.eventName],
@@ -444,13 +444,23 @@ function Details({ booking }) {
   ];
 
   return (
-    <div className="detail-grid">
-      {fields.map(([label, value]) => (
-        <label key={label}>
-          <span>{label}</span>
-          <output>{value}</output>
-        </label>
-      ))}
+    <div className="details-stack">
+      <div className="detail-grid">
+        {fields.map(([label, value]) => (
+          <label key={label}>
+            <span>{label}</span>
+            <output>{value}</output>
+          </label>
+        ))}
+      </div>
+      <section className="front-notes">
+        <span>Booking Notes</span>
+        <textarea
+          value={booking.notes || ''}
+          onChange={(event) => onUpdate(booking.id, { notes: event.target.value })}
+          placeholder="Write booking notes here..."
+        />
+      </section>
     </div>
   );
 }
