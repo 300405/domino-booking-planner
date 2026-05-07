@@ -344,6 +344,7 @@ function Details({ booking }) {
     ['Email', booking.email],
     ['Phone', booking.phone],
     ['Deposit / Hold Amount', formatMoney(booking.deposit)],
+    ['Square Checkout Link', booking.squareCheckoutUrl ? 'Added' : 'Not added'],
     ['Square Receipt / Payment Ref', booking.squareReference || 'Not added'],
     ['Date', formatDisplayDate(booking.date)],
     ['Square Payment Status', booking.paymentStatus],
@@ -435,6 +436,7 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
                 <td><StatusPill value={booking.releaseStatus} /></td>
                 <td>
                   <div className="row-actions">
+                    {booking.squareCheckoutUrl && <a className="table-link" href={booking.squareCheckoutUrl} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>Pay Link</a>}
                     <button aria-label="Approve" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { status: 'Confirmed' }); }}><Check size={15} /></button>
                     <button aria-label="Mark Square paid" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Paid in Square', status: 'Confirmed' }); }}><CreditCard size={15} /></button>
                     <button aria-label="Mark refunded" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { releaseStatus: 'Refunded', status: 'Confirmed' }); }}><RefreshCcw size={15} /></button>
@@ -504,6 +506,7 @@ function PaymentsView({ bookings, statusFilter, setStatusFilter, onSelect, onUpd
                 <td><StatusPill value={booking.releaseStatus} /></td>
                 <td>
                   <div className="row-actions text-actions">
+                    {booking.squareCheckoutUrl && <a className="table-link" href={booking.squareCheckoutUrl} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>Open Link</a>}
                     <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Paid in Square', status: 'Confirmed' }); }}>Square Paid</button>
                     <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { releaseStatus: 'Refund due', status: 'Refund due' }); }}>Refund Due</button>
                     <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { releaseStatus: 'Refunded', status: 'Confirmed' }); }}>Refund Done</button>
@@ -620,6 +623,7 @@ function BookingModal({ form, setForm, onClose, onSubmit }) {
           <Field label="Start time" type="time" value={form.start} onChange={(value) => setField('start', value)} />
           <Field label="End time" type="time" value={form.end} onChange={(value) => setField('end', value)} />
           <Field label="Deposit / hold (£)" type="number" min="0" value={form.deposit} onChange={(value) => setField('deposit', value)} />
+          <Field label="Square checkout link" type="url" value={form.squareCheckoutUrl} onChange={(value) => setField('squareCheckoutUrl', value)} />
           <Field label="Square receipt / payment ref" value={form.squareReference} onChange={(value) => setField('squareReference', value)} />
           <label>
             <span>Square payment</span>
@@ -664,6 +668,7 @@ function defaultForm() {
     start: '18:00',
     end: '23:00',
     deposit: 100,
+    squareCheckoutUrl: '',
     squareReference: '',
     paymentStatus: 'Pending',
     notes: '',
