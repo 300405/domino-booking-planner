@@ -340,6 +340,7 @@ function Details({ booking }) {
     ['Email', booking.email],
     ['Phone', booking.phone],
     ['Deposit / Hold Amount', formatMoney(booking.deposit)],
+    ['Square Receipt / Payment Ref', booking.squareReference || 'Not added'],
     ['Date', formatDisplayDate(booking.date)],
     ['Square Payment Status', booking.paymentStatus],
     ['Time', `${booking.start} - ${booking.end}`],
@@ -410,6 +411,7 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
               <th>Time</th>
               <th>Status</th>
               <th>Deposit / Hold</th>
+              <th>Square Ref</th>
               <th>Square Payment</th>
               <th>Refund</th>
               <th>Actions</th>
@@ -424,6 +426,7 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
                 <td>{booking.start} - {booking.end}</td>
                 <td><StatusPill value={booking.status} /></td>
                 <td>{formatMoney(booking.deposit)}</td>
+                <td>{booking.squareReference || 'Not added'}</td>
                 <td><StatusPill value={booking.paymentStatus} /></td>
                 <td><StatusPill value={booking.releaseStatus} /></td>
                 <td>
@@ -479,6 +482,7 @@ function PaymentsView({ bookings, statusFilter, setStatusFilter, onSelect, onUpd
               <th>Customer</th>
               <th>Date</th>
               <th>Deposit / Hold</th>
+              <th>Square Ref</th>
               <th>Square Payment</th>
               <th>Refund</th>
               <th>Actions</th>
@@ -491,6 +495,7 @@ function PaymentsView({ bookings, statusFilter, setStatusFilter, onSelect, onUpd
                 <td>{booking.customerName}</td>
                 <td>{formatDisplayDate(booking.date)}</td>
                 <td>{formatMoney(booking.deposit)}</td>
+                <td>{booking.squareReference || 'Not added'}</td>
                 <td><StatusPill value={booking.paymentStatus} /></td>
                 <td><StatusPill value={booking.releaseStatus} /></td>
                 <td>
@@ -610,6 +615,7 @@ function BookingModal({ form, setForm, onClose, onSubmit }) {
           <Field label="Start time" type="time" value={form.start} onChange={(value) => setField('start', value)} />
           <Field label="End time" type="time" value={form.end} onChange={(value) => setField('end', value)} />
           <Field label="Deposit / hold (£)" type="number" min="0" value={form.deposit} onChange={(value) => setField('deposit', value)} />
+          <Field label="Square receipt / payment ref" value={form.squareReference} onChange={(value) => setField('squareReference', value)} />
           <label>
             <span>Square payment</span>
             <select value={form.paymentStatus} onChange={(event) => setField('paymentStatus', event.target.value)}>
@@ -653,6 +659,7 @@ function defaultForm() {
     start: '18:00',
     end: '23:00',
     deposit: 100,
+    squareReference: '',
     paymentStatus: 'Pending',
     notes: '',
   };
