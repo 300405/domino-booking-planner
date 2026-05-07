@@ -120,7 +120,11 @@ function App() {
           )}
           {activeView === 'Payments' && <PaymentsView bookings={bookings} statusFilter={statusFilter} setStatusFilter={setStatusFilter} onSelect={setSelectedId} onUpdate={updateBooking} />}
           {activeView === 'Customers' && <CustomersView customers={customerRows} />}
-          {activeView === 'Settings' && <SettingsView />}
+          {activeView === 'Settings' && <SettingsView onClearBookings={() => {
+            setBookings([]);
+            setSelectedId(null);
+            localStorage.removeItem(bookingsStorageKey);
+          }} />}
         </section>
       </main>
       {showForm && <BookingModal form={form} setForm={setForm} onClose={() => setShowForm(false)} onSubmit={submitBooking} />}
@@ -570,7 +574,7 @@ function ReportsView({ stats, bookings }) {
   );
 }
 
-function SettingsView() {
+function SettingsView({ onClearBookings }) {
   return (
     <section className="panel settings-panel">
       <div className="panel-title">
@@ -589,6 +593,7 @@ function SettingsView() {
           <span>Booking storage</span>
           <input value="This browser only until database is added" readOnly />
         </label>
+        <button className="danger settings-action" type="button" onClick={onClearBookings}>Clear All Saved Bookings</button>
       </div>
     </section>
   );
@@ -667,6 +672,7 @@ function defaultForm() {
 
 function loadBookings() {
   try {
+    localStorage.removeItem('domino-booking-planner-bookings-v1');
     const stored = JSON.parse(localStorage.getItem(bookingsStorageKey));
     return Array.isArray(stored) && stored.length ? stored : seedBookings;
   } catch {

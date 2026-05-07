@@ -160,6 +160,7 @@ tbody tr:hover { background: #fbfcfa; }
 .settings-list label { display: grid; gap: 8px; }
 .settings-list span { color: var(--muted); font-size: 12px; font-weight: 850; }
 .settings-list input { height: 40px; border: 1px solid var(--border); border-radius: 8px; padding: 0 12px; color: #273730; background: #fbfcfa; }
+.settings-action { width: max-content; margin-top: 6px; }
 
 .modal-backdrop { position: fixed; inset: 0; z-index: 40; background: rgba(13, 25, 21, .42); display: grid; place-items: center; padding: 20px; }
 .modal { width: min(720px, 100%); max-height: calc(100vh - 40px); overflow: auto; background: #fff; border-radius: 8px; box-shadow: var(--shadow); padding: 20px; display: grid; gap: 16px; }
