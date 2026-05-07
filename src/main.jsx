@@ -66,6 +66,12 @@ function App() {
     setBookings((items) => items.map((booking) => (booking.id === id ? { ...booking, ...patch } : booking)));
   }
 
+  function deleteBooking(id) {
+    setBookings((items) => items.filter((booking) => booking.id !== id));
+    setSelectedId(null);
+    setShowBookingDetails(false);
+  }
+
   function openBooking(id) {
     setSelectedId(id);
     setActiveView('Party Planner');
@@ -130,7 +136,7 @@ function App() {
                     setVisibleYear(today.getFullYear());
                   }}
                 />
-                <DetailPanel booking={selected} onUpdate={updateBooking} onClose={() => setSelectedId(null)} />
+                <DetailPanel booking={selected} onUpdate={updateBooking} onDelete={deleteBooking} onClose={() => setSelectedId(null)} />
               </div>
               <QueuePanel bookings={filteredBookings} statusFilter={statusFilter} setStatusFilter={setStatusFilter} onSelect={openBooking} onUpdate={updateBooking} />
             </>
@@ -150,6 +156,7 @@ function App() {
           booking={selected}
           onClose={() => setShowBookingDetails(false)}
           onUpdate={updateBooking}
+          onDelete={deleteBooking}
         />
       )}
     </div>
@@ -337,7 +344,7 @@ function CalendarPanel({ bookings, month, year, selectedId, onSelect, onPrev, on
   );
 }
 
-function DetailPanel({ booking, onUpdate, onClose }) {
+function DetailPanel({ booking, onUpdate, onDelete, onClose }) {
   const [activeTab, setActiveTab] = useState('Details');
 
   if (!booking) {
@@ -373,16 +380,26 @@ function DetailPanel({ booking, onUpdate, onClose }) {
         <button className="secondary" onClick={() => onUpdate(booking.id, { status: 'Confirmed' })}><Check size={16} /> Approve</button>
         <button className="dark" onClick={() => onUpdate(booking.id, { paymentStatus: 'Paid in Square', status: 'Confirmed' })}><CreditCard size={16} /> Mark Square Paid</button>
         <button className="danger" onClick={() => onUpdate(booking.id, { releaseStatus: 'Refunded', status: 'Confirmed' })}><RefreshCcw size={16} /> Refund Done</button>
+        <button
+          className="danger"
+          onClick={() => {
+            if (window.confirm(`Delete booking for ${booking.eventName}?`)) {
+              onDelete(booking.id);
+            }
+          }}
+        >
+          <X size={16} /> Delete Booking
+        </button>
       </div>
     </aside>
   );
 }
 
-function BookingDetailsModal({ booking, onClose, onUpdate }) {
+function BookingDetailsModal({ booking, onClose, onUpdate, onDelete }) {
   return (
     <div className="modal-backdrop booking-detail-backdrop" onClick={onClose}>
       <div className="booking-detail-modal" onClick={(event) => event.stopPropagation()}>
-        <DetailPanel booking={booking} onUpdate={onUpdate} onClose={onClose} />
+        <DetailPanel booking={booking} onUpdate={onUpdate} onDelete={onDelete} onClose={onClose} />
       </div>
     </div>
   );
