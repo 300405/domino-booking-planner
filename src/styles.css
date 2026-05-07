@@ -187,6 +187,10 @@ tbody tr.selected-row { background: var(--green-soft); }
 .payment-link-row { display: grid; gap: 8px; align-content: end; }
 .payment-link-row span { color: var(--muted); font-size: 12px; font-weight: 850; }
 .payment-link-row a { text-decoration: none; width: max-content; }
+.contract-link-row { display: grid; gap: 8px; align-content: end; }
+.contract-link-row span { color: var(--muted); font-size: 12px; font-weight: 850; }
+.contract-link-row div { display: flex; flex-wrap: wrap; gap: 8px; }
+.contract-link-row a { text-decoration: none; min-width: 118px; }
 
 @media (max-width: 1220px) {
   .app-shell { grid-template-columns: 86px minmax(0, 1fr); }

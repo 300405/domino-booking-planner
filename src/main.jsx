@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CreditCard,
+  FileText,
   Filter,
   Menu,
   MoreVertical,
@@ -28,6 +29,7 @@ const today = parseDate('2026-05-05');
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const defaultSquareCheckoutUrl = 'https://square.link/u/uS1Gm7Gx';
+const contractUrl = '/contracts/function-room-contract.docx';
 
 const seedBookings = [
   importedBooking(1, '2026-05-09', '18th Birthday party Allan dj', '18th Birthday party Allan dj', '19:00', '00:00', 'This is an event reminder'),
@@ -394,6 +396,7 @@ function DetailPanel({ booking, onUpdate, onDelete, onClose }) {
       {activeTab === 'Notes' && <Notes booking={booking} />}
       {activeTab === 'History' && <History booking={booking} />}
       <div className="detail-actions">
+        <a className="secondary detail-link" href={contractUrl} download><FileText size={16} /> Download Contract</a>
         <a className="secondary detail-link" href={buildGoogleCalendarUrl(booking)} target="_blank" rel="noreferrer"><CalendarDays size={16} /> Add to Google Calendar</a>
         <button className="secondary" onClick={() => onUpdate(booking.id, { status: 'Confirmed' })}><Check size={16} /> Approve</button>
         <button className="dark" onClick={() => onUpdate(booking.id, { paymentStatus: 'Paid in Square', status: 'Confirmed' })}><CreditCard size={16} /> Mark Square Paid</button>
@@ -758,6 +761,13 @@ function BookingModal({ form, setForm, onClose, onSubmit }) {
               {['Pending', 'Paid in Square', 'Cash deposit paid'].map((status) => <option key={status}>{status}</option>)}
             </select>
           </label>
+          <div className="contract-link-row">
+            <span>Contract</span>
+            <div>
+              <a className="secondary" href={contractUrl} target="_blank" rel="noreferrer"><FileText size={16} /> Open</a>
+              <a className="primary" href={contractUrl} download><FileText size={16} /> Download</a>
+            </div>
+          </div>
           <label className="wide">
             <span>Notes</span>
             <textarea value={form.notes} onChange={(event) => setField('notes', event.target.value)} />
