@@ -41,6 +41,7 @@ function App() {
   const [form, setForm] = useState(defaultForm());
   const [activeView, setActiveView] = useState('Party Planner');
   const [showMonthList, setShowMonthList] = useState(false);
+  const [showBookingDetails, setShowBookingDetails] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(bookingsStorageKey, JSON.stringify(bookings));
@@ -69,6 +70,7 @@ function App() {
     setSelectedId(id);
     setActiveView('Party Planner');
     setShowMonthList(false);
+    setShowBookingDetails(true);
   }
 
   function submitBooking(event) {
@@ -128,7 +130,7 @@ function App() {
                     setVisibleYear(today.getFullYear());
                   }}
                 />
-                <DetailPanel booking={selected} onUpdate={updateBooking} />
+                <DetailPanel booking={selected} onUpdate={updateBooking} onClose={() => setSelectedId(null)} />
               </div>
               <QueuePanel bookings={filteredBookings} statusFilter={statusFilter} setStatusFilter={setStatusFilter} onSelect={openBooking} onUpdate={updateBooking} />
             </>
@@ -143,6 +145,13 @@ function App() {
         </section>
       </main>
       {showForm && <BookingModal form={form} setForm={setForm} onClose={() => setShowForm(false)} onSubmit={submitBooking} />}
+      {showBookingDetails && selected && (
+        <BookingDetailsModal
+          booking={selected}
+          onClose={() => setShowBookingDetails(false)}
+          onUpdate={updateBooking}
+        />
+      )}
     </div>
   );
 }
@@ -327,7 +336,7 @@ function CalendarPanel({ bookings, month, year, selectedId, onSelect, onPrev, on
   );
 }
 
-function DetailPanel({ booking, onUpdate }) {
+function DetailPanel({ booking, onUpdate, onClose }) {
   const [activeTab, setActiveTab] = useState('Details');
 
   if (!booking) {
@@ -347,7 +356,7 @@ function DetailPanel({ booking, onUpdate }) {
           <h2><i className={`dot ${slug(booking.status)}`} /> {booking.eventName}</h2>
           <StatusPill value={booking.status} />
         </div>
-        <button className="icon-button" aria-label="Close detail"><X size={18} /></button>
+        <button className="icon-button" aria-label="Close detail" onClick={onClose}><X size={18} /></button>
       </div>
       <div className="tabs">
         {['Details', 'Payments', 'Notes', 'History'].map((tab) => (
@@ -364,6 +373,16 @@ function DetailPanel({ booking, onUpdate }) {
         <button className="danger" onClick={() => onUpdate(booking.id, { releaseStatus: 'Refunded', status: 'Confirmed' })}><RefreshCcw size={16} /> Refund Done</button>
       </div>
     </aside>
+  );
+}
+
+function BookingDetailsModal({ booking, onClose, onUpdate }) {
+  return (
+    <div className="modal-backdrop booking-detail-backdrop" onClick={onClose}>
+      <div className="booking-detail-modal" onClick={(event) => event.stopPropagation()}>
+        <DetailPanel booking={booking} onUpdate={onUpdate} onClose={onClose} />
+      </div>
+    </div>
   );
 }
 
