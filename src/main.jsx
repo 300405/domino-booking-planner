@@ -86,7 +86,15 @@ function App() {
     <div className="app-shell">
       <Sidebar activeView={activeView} onNavigate={setActiveView} />
       <main className="main">
-        <Topbar title={activeView} bookings={bookings} onAdd={() => setShowForm(true)} />
+        <Topbar
+          title={activeView}
+          bookings={bookings}
+          onAdd={() => setShowForm(true)}
+          onOpenNotification={(status) => {
+            setStatusFilter(status);
+            setActiveView(status === 'Pending' ? 'Party Planner' : 'Payments');
+          }}
+        />
         <section className="content">
           {activeView === 'Party Planner' && (
             <>
@@ -159,7 +167,7 @@ function Sidebar({ activeView, onNavigate }) {
   );
 }
 
-function Topbar({ title, bookings, onAdd }) {
+function Topbar({ title, bookings, onAdd, onOpenNotification }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const notifications = buildNotifications(bookings);
 
@@ -183,10 +191,17 @@ function Topbar({ title, bookings, onAdd }) {
             <div className="notification-menu">
               <strong>Notifications</strong>
               {notifications.map((item) => (
-                <div className="notification-item" key={item.title}>
+                <button
+                  className="notification-item"
+                  key={item.title}
+                  onClick={() => {
+                    onOpenNotification(item.status);
+                    setShowNotifications(false);
+                  }}
+                >
                   <span>{item.title}</span>
                   <small>{item.detail}</small>
-                </div>
+                </button>
               ))}
               {notifications.length === 0 && <p>Nothing needs attention.</p>}
             </div>
@@ -625,6 +640,10 @@ function BookingModal({ form, setForm, onClose, onSubmit }) {
           <Field label="End time" type="time" value={form.end} onChange={(value) => setField('end', value)} />
           <Field label="Deposit / hold (£)" type="number" min="0" value={form.deposit} onChange={(value) => setField('deposit', value)} />
           <Field label="Square checkout link" type="url" value={form.squareCheckoutUrl} onChange={(value) => setField('squareCheckoutUrl', value)} />
+          <div className="payment-link-row">
+            <span>Take payment</span>
+            <a className="primary" href={form.squareCheckoutUrl || defaultSquareCheckoutUrl} target="_blank" rel="noreferrer">Open Square Payment</a>
+          </div>
           <Field label="Square receipt / payment ref" value={form.squareReference} onChange={(value) => setField('squareReference', value)} />
           <label>
             <span>Square payment</span>
@@ -727,13 +746,13 @@ function buildNotifications(bookings) {
   const notifications = [];
 
   if (pending) {
-    notifications.push({ title: `${pending} pending booking${pending === 1 ? '' : 's'}`, detail: 'Review and approve the party details.' });
+    notifications.push({ title: `${pending} pending booking${pending === 1 ? '' : 's'}`, detail: 'Review and approve the party details.', status: 'Pending' });
   }
   if (refundsDue) {
-    notifications.push({ title: `${refundsDue} refund due`, detail: 'Refund the deposit in Square, then mark it done here.' });
+    notifications.push({ title: `${refundsDue} refund due`, detail: 'Refund the deposit in Square, then mark it done here.', status: 'Refund due' });
   }
   if (holdsOpen) {
-    notifications.push({ title: `${holdsOpen} deposit to take`, detail: 'Take the deposit in Square, then mark it paid here.' });
+    notifications.push({ title: `${holdsOpen} deposit to take`, detail: 'Take the deposit in Square, then mark it paid here.', status: 'Pending' });
   }
 
   return notifications;

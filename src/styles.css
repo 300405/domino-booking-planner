@@ -48,7 +48,8 @@ button { cursor: pointer; }
 .notification-menu { position: absolute; right: 0; top: 48px; width: 310px; z-index: 30; border: 1px solid var(--border); border-radius: 8px; background: #fff; box-shadow: var(--shadow); padding: 10px; display: grid; gap: 8px; }
 .notification-menu > strong { padding: 4px 6px 6px; font-size: 14px; }
 .notification-menu p { margin: 0; padding: 10px 6px; color: var(--muted); font-size: 13px; }
-.notification-item { border: 1px solid var(--border-soft); border-radius: 8px; padding: 10px; background: #fbfcfa; display: grid; gap: 4px; }
+.notification-item { border: 1px solid var(--border-soft); border-radius: 8px; padding: 10px; background: #fbfcfa; display: grid; gap: 4px; text-align: left; }
+.notification-item:hover { background: var(--green-soft); }
 .notification-item span { font-weight: 850; font-size: 13px; color: var(--text); }
 .notification-item small { color: var(--muted); line-height: 1.4; }
 
@@ -175,6 +176,9 @@ tbody tr:hover { background: #fbfcfa; }
 .modal input, .modal select { height: 40px; padding: 0 12px; }
 .modal textarea { min-height: 88px; resize: vertical; padding: 10px 12px; }
 .modal .wide { grid-column: 1 / -1; }
+.payment-link-row { display: grid; gap: 8px; align-content: end; }
+.payment-link-row span { color: var(--muted); font-size: 12px; font-weight: 850; }
+.payment-link-row a { text-decoration: none; width: max-content; }
 
 @media (max-width: 1220px) {
   .app-shell { grid-template-columns: 86px minmax(0, 1fr); }
