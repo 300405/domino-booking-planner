@@ -29,6 +29,7 @@ const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'Jul
 const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const seedBookings = [];
+const defaultSquareCheckoutUrl = 'https://square.link/u/uS1Gm7Gx';
 
 function App() {
   const [bookings, setBookings] = useState(loadBookings);
@@ -668,7 +669,7 @@ function defaultForm() {
     start: '18:00',
     end: '23:00',
     deposit: 100,
-    squareCheckoutUrl: '',
+    squareCheckoutUrl: defaultSquareCheckoutUrl,
     squareReference: '',
     paymentStatus: 'Pending',
     notes: '',
