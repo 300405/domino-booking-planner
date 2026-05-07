@@ -65,6 +65,12 @@ function App() {
     setBookings((items) => items.map((booking) => (booking.id === id ? { ...booking, ...patch } : booking)));
   }
 
+  function openBooking(id) {
+    setSelectedId(id);
+    setActiveView('Party Planner');
+    setShowMonthList(false);
+  }
+
   function submitBooking(event) {
     event.preventDefault();
     const next = {
@@ -107,14 +113,14 @@ function App() {
                 setShowMonthList(false);
                 setActiveView(status === 'All Statuses' ? 'Party Planner' : 'Payments');
               }} />
-              {showMonthList && <MonthBookingsList bookings={visibleBookings} month={visibleMonth} year={visibleYear} onClose={() => setShowMonthList(false)} onSelect={setSelectedId} />}
+              {showMonthList && <MonthBookingsList bookings={visibleBookings} month={visibleMonth} year={visibleYear} onClose={() => setShowMonthList(false)} onSelect={openBooking} />}
               <div className="workspace-grid">
                 <CalendarPanel
                   bookings={visibleBookings}
                   month={visibleMonth}
                   year={visibleYear}
                   selectedId={selected?.id}
-                  onSelect={setSelectedId}
+                  onSelect={openBooking}
                   onPrev={() => changeMonth(-1)}
                   onNext={() => changeMonth(1)}
                   onToday={() => {
@@ -124,10 +130,10 @@ function App() {
                 />
                 <DetailPanel booking={selected} onUpdate={updateBooking} />
               </div>
-              <QueuePanel bookings={filteredBookings} statusFilter={statusFilter} setStatusFilter={setStatusFilter} onSelect={setSelectedId} onUpdate={updateBooking} />
+              <QueuePanel bookings={filteredBookings} statusFilter={statusFilter} setStatusFilter={setStatusFilter} onSelect={openBooking} onUpdate={updateBooking} />
             </>
           )}
-          {activeView === 'Payments' && <PaymentsView bookings={bookings} statusFilter={statusFilter} setStatusFilter={setStatusFilter} onSelect={setSelectedId} onUpdate={updateBooking} />}
+          {activeView === 'Payments' && <PaymentsView bookings={bookings} statusFilter={statusFilter} setStatusFilter={setStatusFilter} onSelect={openBooking} onUpdate={updateBooking} />}
           {activeView === 'Customers' && <CustomersView customers={customerRows} />}
           {activeView === 'Settings' && <SettingsView onClearBookings={() => {
             setBookings([]);
@@ -282,7 +288,15 @@ function CalendarPanel({ bookings, month, year, selectedId, onSelect, onPrev, on
         {days.map((day) => {
           const dayBookings = bookings.filter((booking) => booking.date === day.iso);
           return (
-            <button className={`calendar-cell ${day.muted ? 'muted' : ''} ${isSameDate(parseDate(day.iso), today) ? 'today' : ''}`} key={day.iso}>
+            <button
+              className={`calendar-cell ${day.muted ? 'muted' : ''} ${isSameDate(parseDate(day.iso), today) ? 'today' : ''}`}
+              key={day.iso}
+              onClick={() => {
+                if (dayBookings.length === 1) {
+                  onSelect(dayBookings[0].id);
+                }
+              }}
+            >
               <span className="cell-date">{day.date.getDate()}</span>
               <span className="cell-events">
                 {dayBookings.map((booking) => (
