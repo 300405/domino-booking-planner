@@ -396,6 +396,8 @@ function Details({ booking }) {
 }
 
 function Payments({ booking }) {
+  const checkoutUrl = booking.squareCheckoutUrl || defaultSquareCheckoutUrl;
+
   return (
     <div className="payment-stack">
       <div className="payment-card">
@@ -405,6 +407,7 @@ function Payments({ booking }) {
           <span>{booking.paymentStatus}</span>
         </div>
       </div>
+      <a className="primary payment-open-link" href={checkoutUrl} target="_blank" rel="noreferrer">Open Square Payment</a>
       <p>This screen records what you do in Square. Square is not connected yet, so take or refund the deposit in Square first, then mark it here.</p>
     </div>
   );
@@ -466,7 +469,7 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
                 <td><StatusPill value={booking.releaseStatus} /></td>
                 <td>
                   <div className="row-actions">
-                    {booking.squareCheckoutUrl && <a className="table-link" href={booking.squareCheckoutUrl} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>Pay Link</a>}
+                    <a className="table-link" href={booking.squareCheckoutUrl || defaultSquareCheckoutUrl} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>Pay Link</a>
                     <button aria-label="Approve" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { status: 'Confirmed' }); }}><Check size={15} /></button>
                     <button aria-label="Mark Square paid" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Paid in Square', status: 'Confirmed' }); }}><CreditCard size={15} /></button>
                     <button aria-label="Mark refunded" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { releaseStatus: 'Refunded', status: 'Confirmed' }); }}><RefreshCcw size={15} /></button>
@@ -536,7 +539,7 @@ function PaymentsView({ bookings, statusFilter, setStatusFilter, onSelect, onUpd
                 <td><StatusPill value={booking.releaseStatus} /></td>
                 <td>
                   <div className="row-actions text-actions">
-                    {booking.squareCheckoutUrl && <a className="table-link" href={booking.squareCheckoutUrl} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>Open Link</a>}
+                    <a className="table-link" href={booking.squareCheckoutUrl || defaultSquareCheckoutUrl} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>Open Link</a>
                     <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Paid in Square', status: 'Confirmed' }); }}>Square Paid</button>
                     <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { releaseStatus: 'Refund due', status: 'Refund due' }); }}>Refund Due</button>
                     <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { releaseStatus: 'Refunded', status: 'Confirmed' }); }}>Refund Done</button>

@@ -115,6 +115,7 @@ button { cursor: pointer; }
 .payment-card strong, .payment-card span { display: block; }
 .payment-card strong { font-size: 24px; }
 .payment-card span, .payment-stack p { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 0; }
+.payment-open-link { width: max-content; text-decoration: none; }
 .notes-box { margin: 16px; border: 1px solid var(--border); border-radius: 8px; min-height: 142px; padding: 14px; color: #34443e; line-height: 1.55; background: #fbfcfa; }
 .history-list { padding: 16px; display: grid; gap: 10px; }
 .history-list span { display: flex; align-items: center; gap: 9px; color: #43564e; font-size: 13px; font-weight: 700; }
