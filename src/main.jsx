@@ -103,7 +103,7 @@ function App() {
       id: Math.max(0, ...bookings.map((booking) => booking.id)) + 1,
       ...form,
       deposit: Number(form.deposit),
-      status: form.paymentStatus === 'Paid in Square' ? 'Confirmed' : 'Pending',
+      status: form.paymentStatus === 'Pending' ? 'Pending' : 'Confirmed',
       releaseStatus: 'Not released',
       createdBy: 'Sharon Bull',
       createdAt: '05/05/2026 16:10',
@@ -257,7 +257,7 @@ function Stats({ stats, onOpenStatus }) {
   return (
     <section className="stats-row" aria-label="Booking summary">
       <Stat icon={CalendarDays} value={stats.monthBookings} label="Bookings This Month" onClick={() => onOpenStatus('This Month')} />
-      <Stat icon={Banknote} value={formatMoney(stats.depositsHeld)} label="Square Deposits Paid" onClick={() => onOpenStatus('Paid in Square')} />
+      <Stat icon={Banknote} value={formatMoney(stats.depositsHeld)} label="Deposits Paid" onClick={() => onOpenStatus('Paid in Square')} />
       <Stat icon={CreditCard} value={formatMoney(stats.cardHolds)} label="Deposits To Take" onClick={() => onOpenStatus('Pending')} />
       <Stat icon={RefreshCcw} value={formatMoney(stats.refundsDue)} label="Refunds Due" tone="danger" onClick={() => onOpenStatus('Refund due')} />
     </section>
@@ -397,6 +397,7 @@ function DetailPanel({ booking, onUpdate, onDelete, onClose }) {
         <a className="secondary detail-link" href={buildGoogleCalendarUrl(booking)} target="_blank" rel="noreferrer"><CalendarDays size={16} /> Add to Google Calendar</a>
         <button className="secondary" onClick={() => onUpdate(booking.id, { status: 'Confirmed' })}><Check size={16} /> Approve</button>
         <button className="dark" onClick={() => onUpdate(booking.id, { paymentStatus: 'Paid in Square', status: 'Confirmed' })}><CreditCard size={16} /> Mark Square Paid</button>
+        <button className="secondary" onClick={() => onUpdate(booking.id, { paymentStatus: 'Cash deposit paid', status: 'Confirmed' })}><Banknote size={16} /> Mark Cash Paid</button>
         <button className="danger" onClick={() => onUpdate(booking.id, { releaseStatus: 'Refunded', status: 'Confirmed' })}><RefreshCcw size={16} /> Refund Done</button>
         <button
           className="danger"
@@ -433,7 +434,7 @@ function Details({ booking }) {
     ['Square Checkout Link', booking.squareCheckoutUrl ? 'Added' : 'Not added'],
     ['Square Receipt / Payment Ref', booking.squareReference || 'Not added'],
     ['Date', formatDisplayDate(booking.date)],
-    ['Square Payment Status', booking.paymentStatus],
+    ['Deposit Payment Status', booking.paymentStatus],
     ['Time', `${booking.start} - ${booking.end}`],
     ['Refund Status', booking.releaseStatus],
     ['Created', `${booking.createdAt} by ${booking.createdBy}`],
@@ -490,7 +491,7 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
         <h2>Bookings & Payment Queue <span>{bookings.length}</span></h2>
         <div className="panel-actions">
           <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-            {['All Statuses', 'Confirmed', 'Pending', 'Refund due', 'Paid in Square', 'Refunded'].map((status) => <option key={status}>{status}</option>)}
+            {['All Statuses', 'Confirmed', 'Pending', 'Refund due', 'Paid in Square', 'Cash deposit paid', 'Refunded'].map((status) => <option key={status}>{status}</option>)}
           </select>
           <button className="secondary"><Filter size={15} /> Filter</button>
         </div>
@@ -506,7 +507,7 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
               <th>Status</th>
               <th>Deposit / Hold</th>
               <th>Square Ref</th>
-              <th>Square Payment</th>
+              <th>Deposit Payment</th>
               <th>Refund</th>
               <th>Actions</th>
             </tr>
@@ -530,6 +531,7 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
                     <a className="table-link" href={booking.squareCheckoutUrl || defaultSquareCheckoutUrl} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>Pay Link</a>
                     <button aria-label="Approve" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { status: 'Confirmed' }); }}><Check size={15} /></button>
                     <button aria-label="Mark Square paid" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Paid in Square', status: 'Confirmed' }); }}><CreditCard size={15} /></button>
+                    <button aria-label="Mark cash paid" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Cash deposit paid', status: 'Confirmed' }); }}><Banknote size={15} /></button>
                     <button aria-label="Mark refunded" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { releaseStatus: 'Refunded', status: 'Confirmed' }); }}><RefreshCcw size={15} /></button>
                     <button aria-label="More"><MoreVertical size={15} /></button>
                   </div>
@@ -546,7 +548,7 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
 
 function PaymentsView({ bookings, statusFilter, setStatusFilter, onSelect, onUpdate }) {
   const paymentRows = bookings.filter((booking) => {
-    const isPaymentRow = ['Pending', 'Paid in Square'].includes(booking.paymentStatus) || ['Refund due', 'Refunded'].includes(booking.releaseStatus);
+    const isPaymentRow = ['Pending', 'Paid in Square', 'Cash deposit paid'].includes(booking.paymentStatus) || ['Refund due', 'Refunded'].includes(booking.releaseStatus);
     const matchesFilter = statusFilter === 'All Statuses' || booking.paymentStatus === statusFilter || booking.releaseStatus === statusFilter || booking.status === statusFilter;
     return isPaymentRow && matchesFilter;
   });
@@ -557,7 +559,7 @@ function PaymentsView({ bookings, statusFilter, setStatusFilter, onSelect, onUpd
         <h2>Payments <span>{paymentRows.length}</span></h2>
         <div className="panel-actions">
           <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-            {['All Statuses', 'Pending', 'Paid in Square', 'Refund due', 'Refunded'].map((status) => <option key={status}>{status}</option>)}
+            {['All Statuses', 'Pending', 'Paid in Square', 'Cash deposit paid', 'Refund due', 'Refunded'].map((status) => <option key={status}>{status}</option>)}
           </select>
         </div>
       </div>
@@ -580,7 +582,7 @@ function PaymentsView({ bookings, statusFilter, setStatusFilter, onSelect, onUpd
               <th>Date</th>
               <th>Deposit / Hold</th>
               <th>Square Ref</th>
-              <th>Square Payment</th>
+              <th>Deposit Payment</th>
               <th>Refund</th>
               <th>Actions</th>
             </tr>
@@ -601,6 +603,7 @@ function PaymentsView({ bookings, statusFilter, setStatusFilter, onSelect, onUpd
                     <a className="table-link" href={buildGoogleCalendarUrl(booking)} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>Calendar</a>
                     <a className="table-link" href={booking.squareCheckoutUrl || defaultSquareCheckoutUrl} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>Open Link</a>
                     <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Paid in Square', status: 'Confirmed' }); }}>Square Paid</button>
+                    <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Cash deposit paid', status: 'Confirmed' }); }}>Cash Paid</button>
                     <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { releaseStatus: 'Refund due', status: 'Refund due' }); }}>Refund Due</button>
                     <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { releaseStatus: 'Refunded', status: 'Confirmed' }); }}>Refund Done</button>
                   </div>
@@ -750,9 +753,9 @@ function BookingModal({ form, setForm, onClose, onSubmit }) {
           </div>
           <Field label="Square receipt / payment ref" value={form.squareReference} onChange={(value) => setField('squareReference', value)} />
           <label>
-            <span>Square payment</span>
+            <span>Deposit payment</span>
             <select value={form.paymentStatus} onChange={(event) => setField('paymentStatus', event.target.value)}>
-              {['Pending', 'Paid in Square'].map((status) => <option key={status}>{status}</option>)}
+              {['Pending', 'Paid in Square', 'Cash deposit paid'].map((status) => <option key={status}>{status}</option>)}
             </select>
           </label>
           <label className="wide">
@@ -800,6 +803,8 @@ function defaultForm() {
 }
 
 function importedBooking(id, date, eventName, customerName, start, end, notes) {
+  const paymentStatus = /cash.*paid|paid.*cash/i.test(notes) ? 'Cash deposit paid' : /£\\s*\\d+.*paid|paid.*£\\s*\\d+/i.test(notes) ? 'Paid in Square' : 'Pending';
+
   return {
     id,
     date,
@@ -812,8 +817,8 @@ function importedBooking(id, date, eventName, customerName, start, end, notes) {
     deposit: 100,
     squareCheckoutUrl: defaultSquareCheckoutUrl,
     squareReference: '',
-    status: 'Pending',
-    paymentStatus: 'Pending',
+    status: paymentStatus === 'Pending' ? 'Pending' : 'Confirmed',
+    paymentStatus,
     releaseStatus: 'Not released',
     createdBy: 'Google Calendar import',
     createdAt: '07/05/2026 09:00',
@@ -839,7 +844,7 @@ function buildStats(bookings, month, year) {
   });
   return {
     monthBookings: monthBookings.length,
-    depositsHeld: bookings.filter((booking) => booking.paymentStatus === 'Paid in Square').reduce((sum, booking) => sum + booking.deposit, 0),
+    depositsHeld: bookings.filter((booking) => ['Paid in Square', 'Cash deposit paid'].includes(booking.paymentStatus)).reduce((sum, booking) => sum + booking.deposit, 0),
     cardHolds: bookings.filter((booking) => booking.paymentStatus === 'Pending').reduce((sum, booking) => sum + booking.deposit, 0),
     refundsDue: bookings.filter((booking) => booking.releaseStatus === 'Refund due').reduce((sum, booking) => sum + booking.deposit, 0),
   };
@@ -895,7 +900,7 @@ function buildGoogleCalendarUrl(booking) {
     `Phone: ${booking.phone || 'Not added'}`,
     `Email: ${booking.email || 'Not added'}`,
     `Deposit: ${formatMoney(booking.deposit)}`,
-    `Square payment: ${booking.paymentStatus}`,
+    `Deposit payment: ${booking.paymentStatus}`,
     `Square reference: ${booking.squareReference || 'Not added'}`,
     `Square checkout link: ${checkoutUrl}`,
     '',
