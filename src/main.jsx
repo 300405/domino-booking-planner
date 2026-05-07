@@ -297,7 +297,7 @@ function CalendarPanel({ bookings, month, year, selectedId, onSelect, onPrev, on
         {days.map((day) => {
           const dayBookings = bookings.filter((booking) => booking.date === day.iso);
           return (
-            <button
+            <div
               className={`calendar-cell ${day.muted ? 'muted' : ''} ${isSameDate(parseDate(day.iso), today) ? 'today' : ''}`}
               key={day.iso}
               onClick={() => {
@@ -309,7 +309,8 @@ function CalendarPanel({ bookings, month, year, selectedId, onSelect, onPrev, on
               <span className="cell-date">{day.date.getDate()}</span>
               <span className="cell-events">
                 {dayBookings.map((booking) => (
-                  <span
+                  <button
+                    type="button"
                     className={`calendar-event ${slug(booking.status)} ${booking.id === selectedId ? 'selected' : ''}`}
                     key={booking.id}
                     onClick={(event) => {
@@ -318,10 +319,10 @@ function CalendarPanel({ bookings, month, year, selectedId, onSelect, onPrev, on
                     }}
                   >
                     {booking.eventName}
-                  </span>
+                  </button>
                 ))}
               </span>
-            </button>
+            </div>
           );
         })}
       </div>
@@ -488,6 +489,7 @@ function QueuePanel({ bookings, statusFilter, setStatusFilter, onSelect, onUpdat
                 <td><StatusPill value={booking.releaseStatus} /></td>
                 <td>
                   <div className="row-actions">
+                    <button aria-label="View booking" onClick={(event) => { event.stopPropagation(); onSelect(booking.id); }}>View</button>
                     <a className="table-link" href={booking.squareCheckoutUrl || defaultSquareCheckoutUrl} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>Pay Link</a>
                     <button aria-label="Approve" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { status: 'Confirmed' }); }}><Check size={15} /></button>
                     <button aria-label="Mark Square paid" onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Paid in Square', status: 'Confirmed' }); }}><CreditCard size={15} /></button>
@@ -558,6 +560,7 @@ function PaymentsView({ bookings, statusFilter, setStatusFilter, onSelect, onUpd
                 <td><StatusPill value={booking.releaseStatus} /></td>
                 <td>
                   <div className="row-actions text-actions">
+                    <button onClick={(event) => { event.stopPropagation(); onSelect(booking.id); }}>View</button>
                     <a className="table-link" href={booking.squareCheckoutUrl || defaultSquareCheckoutUrl} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>Open Link</a>
                     <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { paymentStatus: 'Paid in Square', status: 'Confirmed' }); }}>Square Paid</button>
                     <button onClick={(event) => { event.stopPropagation(); onUpdate(booking.id, { releaseStatus: 'Refund due', status: 'Refund due' }); }}>Refund Due</button>

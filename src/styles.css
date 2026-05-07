@@ -82,12 +82,12 @@ button { cursor: pointer; }
 
 .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(94px, 1fr)); }
 .day-head { height: 38px; border-right: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); display: grid; place-items: center; color: #44554f; font-size: 12px; font-weight: 850; }
-.calendar-cell { min-height: 94px; border: 0; border-right: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); background: #fff; padding: 9px; text-align: left; display: block; }
+.calendar-cell { min-height: 94px; border-right: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); background: #fff; padding: 9px; text-align: left; display: block; }
 .calendar-cell.muted { background: #fbfcfa; color: #9ca7a1; }
 .calendar-cell.today .cell-date { color: var(--green); }
 .cell-date { display: block; font-size: 13px; font-weight: 850; }
 .cell-events { display: grid; gap: 6px; margin-top: 9px; }
-.calendar-event { min-height: 24px; border-radius: 6px; padding: 4px 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 800; color: var(--green); background: var(--green-soft); }
+.calendar-event { width: 100%; min-height: 24px; border: 0; border-radius: 6px; padding: 4px 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 800; color: var(--green); background: var(--green-soft); text-align: left; }
 .calendar-event.pending { color: var(--blue); background: var(--blue-soft); }
 .calendar-event.refund-due { color: var(--red); background: var(--red-soft); }
 .calendar-event.selected { outline: 2px solid var(--brass); }
@@ -137,7 +137,7 @@ tbody tr.selected-row { background: var(--green-soft); }
 .status-pill.released { background: #eef2ef; color: #5a6862; }
 .status-pill.not-released { background: #f3f0ea; color: #746858; }
 .row-actions { display: flex; gap: 6px; }
-.row-actions button { width: 31px; height: 31px; display: inline-grid; place-items: center; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: #42534c; }
+.row-actions button { min-width: 31px; height: 31px; padding: 0 9px; display: inline-grid; place-items: center; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: #42534c; font-size: 12px; font-weight: 800; }
 .row-actions.text-actions button { width: auto; min-width: 74px; padding: 0 10px; font-size: 12px; font-weight: 800; }
 .table-link { min-height: 31px; border: 1px solid var(--green); border-radius: 8px; color: var(--green); background: #fff; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; font-size: 12px; font-weight: 850; }
 .table-link:hover { background: var(--green-soft); }
